@@ -20,7 +20,7 @@ library(tidyverse)
 # Part A:
 
 
-all_files <- list.files(path = "data_paper/", recursive = TRUE)
+all_files <- list.files(path = "data_core/", recursive = TRUE) # or "data_LOO/"
 all_files <- all_files[all_files != "site_info.csv"]
 print(all_files)
 
@@ -39,7 +39,7 @@ if (length(bad_files) > 0) {
 
 
 ## PLACEHOLDER TO TEST
-all_files <- all_files[c(1,3)]
+all_files <- all_files[1]
 
 for(i in 1:length(all_files)){
   
@@ -50,7 +50,7 @@ for(i in 1:length(all_files)){
   
   # Extract metadata from the filename using regex patterns
   subset     <- str_extract(filename, "^(Full|Carba|ESBL|Fatal)")
-  purpose    <- ifelse(str_detect(filename, "shareable"), "paper", "BMGF")
+  purpose    <- ifelse(str_detect(filename, "LOO"), "LOO", "core")
   date_stamp <- str_extract(filename, "\\d{8}")  # YYYYMMDD
   days       <- str_extract(filename, "_(28|365)_") %>% str_replace_all("_", "")
   what_data  <- str_extract(filename, "ALL|min10")
