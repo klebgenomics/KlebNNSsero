@@ -1,0 +1,90 @@
+locus,Site,raw_count,adj_count,raw_prop,adj_prop,raw_sum,adj_sum,Country,Region
+O2afg.v2,Kilifi,25,17,0.378787878787879,0.333333333333333,66,51,Kenya,Eastern Africa
+O1.v1,Kilifi,15,12,0.227272727272727,0.235294117647059,66,51,Kenya,Eastern Africa
+O2afg.v2,SPINZ_Lusaka,86,7,0.895833333333333,0.538461538461538,96,13,Zambia,Eastern Africa
+O1.v2,MBQueen Elizabeth Central Hospital,6,6,0.75,0.75,8,8,Malawi,Eastern Africa
+O1.v2,BAES,8,5,0.615384615384615,0.555555555555556,13,9,Ethiopia,Eastern Africa
+O1.v2,BANN,5,5,0.294117647058824,0.357142857142857,17,14,Nigeria,Western Africa
+O1.v2,Kilifi,7,5,0.106060606060606,0.0980392156862745,66,51,Kenya,Eastern Africa
+O1.v2,BGHOSPITAL 1,4,4,0.285714285714286,0.571428571428571,14,7,South Africa,Southern Africa
+O1.v1,BANN,5,4,0.294117647058824,0.285714285714286,17,14,Nigeria,Western Africa
+O1.v1,BAPP,4,4,0.8,0.8,5,5,Pakistan,Southern Asia
+O2afg.v2,HOSPITAL 1,6,4,0.285714285714286,0.285714285714286,21,14,South Africa,Southern Africa
+O5,HOSPITAL 1,6,4,0.285714285714286,0.285714285714286,21,14,South Africa,Southern Africa
+O1.v2,HOSPITAL 1,7,4,0.333333333333333,0.285714285714286,21,14,South Africa,Southern Africa
+O3b,Kilifi,4,4,0.0606060606060606,0.0784313725490196,66,51,Kenya,Eastern Africa
+O1.v1,Mbagathi,5,4,0.714285714285714,0.666666666666667,7,6,Kenya,Eastern Africa
+O4,Kilifi,4,4,0.0606060606060606,0.0784313725490196,66,51,Kenya,Eastern Africa
+O5,Kilifi,6,4,0.0909090909090909,0.0784313725490196,66,51,Kenya,Eastern Africa
+O1.v2,MBKorle Bu Hospital,4,4,0.285714285714286,0.4,14,10,Ghana,Western Africa
+O2afg.v2,BAES,4,3,0.307692307692308,0.333333333333333,13,9,Ethiopia,Eastern Africa
+O2a.v1,Kilifi,3,3,0.0454545454545455,0.0588235294117647,66,51,Kenya,Eastern Africa
+O1.v2,MBKilimanjaro Christian Medical Centre,21,3,1,1,21,3,Tanzania,Eastern Africa
+O2afg.v2,BGHOSPITAL 5,5,2,0.833333333333333,0.666666666666667,6,3,South Africa,Southern Africa
+O5,BGHOSPITAL 6,2,2,0.5,0.5,4,4,South Africa,Southern Africa
+O1.v2,BGHOSPITAL 3,2,2,0.5,0.5,4,4,South Africa,Southern Africa
+O2afg.v2,BANN,2,2,0.117647058823529,0.142857142857143,17,14,Nigeria,Western Africa
+O2a.v1,BANN,4,2,0.235294117647059,0.142857142857143,17,14,Nigeria,Western Africa
+O1.v1,BAZAT,2,2,0.5,0.5,4,4,South Africa,Southern Africa
+O1.v2,SPINZ_Lusaka,4,2,0.0416666666666667,0.153846153846154,96,13,Zambia,Eastern Africa
+O2a.v1,SPINZ_Lusaka,2,2,0.0208333333333333,0.153846153846154,96,13,Zambia,Eastern Africa
+O1.v1,HOSPITAL 1,2,2,0.0952380952380952,0.142857142857143,21,14,South Africa,Southern Africa
+O1.v2,Mbagathi,2,2,0.285714285714286,0.333333333333333,7,6,Kenya,Eastern Africa
+O1.v2,AIDH2,4,2,0.25,0.25,16,8,India,Southern Asia
+O1.v2,MBTygerberg Hospital,2,2,1,1,2,2,South Africa,Southern Africa
+O2afg.v2,MBKorle Bu Hospital,2,2,0.142857142857143,0.2,14,10,Ghana,Western Africa
+O3/O3a,BGHOSPITAL 4,1,1,0.2,0.25,5,4,South Africa,Southern Africa
+O4,BGHOSPITAL 1,7,1,0.5,0.142857142857143,14,7,South Africa,Southern Africa
+O2afg.v2,BGHOSPITAL 1,2,1,0.142857142857143,0.142857142857143,14,7,South Africa,Southern Africa
+O5,BGHOSPITAL 4,1,1,0.2,0.25,5,4,South Africa,Southern Africa
+O5,BGHOSPITAL 2,1,1,0.25,0.333333333333333,4,3,South Africa,Southern Africa
+O4,BGHOSPITAL 6,1,1,0.25,0.25,4,4,South Africa,Southern Africa
+O2a.v1,BGHOSPITAL 3,1,1,0.25,0.25,4,4,South Africa,Southern Africa
+O4,BGHOSPITAL 2,2,1,0.5,0.333333333333333,4,3,South Africa,Southern Africa
+O1.v2,BGHOSPITAL 5,1,1,0.166666666666667,0.333333333333333,6,3,South Africa,Southern Africa
+O1.v1,BGHOSPITAL 4,1,1,0.2,0.25,5,4,South Africa,Southern Africa
+O2a.v1,BGHOSPITAL 1,1,1,0.0714285714285714,0.142857142857143,14,7,South Africa,Southern Africa
+O3/O3a,BGHOSPITAL 2,1,1,0.25,0.333333333333333,4,3,South Africa,Southern Africa
+O1.v1,BGHOSPITAL 3,1,1,0.25,0.25,4,4,South Africa,Southern Africa
+O1.v2,BGHOSPITAL 4,2,1,0.4,0.25,5,4,South Africa,Southern Africa
+O1.v1,BGHOSPITAL 6,1,1,0.25,0.25,4,4,South Africa,Southern Africa
+O2afg.v2,BABC,1,1,0.5,0.5,2,2,Bangladesh,Southern Asia
+O1.v1,BABC,1,1,0.5,0.5,2,2,Bangladesh,Southern Asia
+O4,BAES,1,1,0.0769230769230769,0.111111111111111,13,9,Ethiopia,Eastern Africa
+O4,BANK,1,1,0.2,0.25,5,4,Nigeria,Western Africa
+O1.v1,BANK,1,1,0.2,0.25,5,4,Nigeria,Western Africa
+O3/O3a,BANK,1,1,0.2,0.25,5,4,Nigeria,Western Africa
+O3b,BANK,2,1,0.4,0.25,5,4,Nigeria,Western Africa
+OL13,BANN,1,1,0.0588235294117647,0.0714285714285714,17,14,Nigeria,Western Africa
+O1.v2,BAPP,1,1,0.2,0.2,5,5,Pakistan,Southern Asia
+O3b,BARK,1,1,0.5,0.5,2,2,Rwanda,Eastern Africa
+O2afg.v2,BARK,1,1,0.5,0.5,2,2,Rwanda,Eastern Africa
+O2afg.v2,BAZAT,1,1,0.25,0.25,4,4,South Africa,Southern Africa
+O1.v2,BAZAT,1,1,0.25,0.25,4,4,South Africa,Southern Africa
+O3b,SPINZ_Lusaka,1,1,0.0104166666666667,0.0769230769230769,96,13,Zambia,Eastern Africa
+OL13,SPINZ_Lusaka,3,1,0.03125,0.0769230769230769,96,13,Zambia,Eastern Africa
+OL13,Kilifi,1,1,0.0151515151515152,0.0196078431372549,66,51,Kenya,Eastern Africa
+O1.v1,Kiambu sub-County Hospital,3,1,0.25,0.5,12,2,Kenya,Eastern Africa
+O3/O3a,Kilifi,1,1,0.0151515151515152,0.0196078431372549,66,51,Kenya,Eastern Africa
+O2a.v1,Kiambu sub-County Hospital,9,1,0.75,0.5,12,2,Kenya,Eastern Africa
+O1.v1,AIDH2,1,1,0.0625,0.125,16,8,India,Southern Asia
+OL103,AIDH2,3,1,0.1875,0.125,16,8,India,Southern Asia
+O3/O3a,AIDH2,1,1,0.0625,0.125,16,8,India,Southern Asia
+O4,AIDH2,4,1,0.25,0.125,16,8,India,Southern Asia
+O2afg.v2,AIDH2,1,1,0.0625,0.125,16,8,India,Southern Asia
+O2a.v1,AIDH2,2,1,0.125,0.125,16,8,India,Southern Asia
+O1.v1,MBKorle Bu Hospital,5,1,0.357142857142857,0.1,14,10,Ghana,Western Africa
+O3b,MBKorle Bu Hospital,1,1,0.0714285714285714,0.1,14,10,Ghana,Western Africa
+OL104,MBKorle Bu Hospital,1,1,0.0714285714285714,0.1,14,10,Ghana,Western Africa
+O3/O3a,MBKorle Bu Hospital,1,1,0.0714285714285714,0.1,14,10,Ghana,Western Africa
+O4,MBUniversity Teaching Hospital,2,1,0.333333333333333,0.25,6,4,Zambia,Eastern Africa
+O2a.v1,MBUniversity Teaching Hospital,1,1,0.166666666666667,0.25,6,4,Zambia,Eastern Africa
+O1.v2,MBUniversity Teaching Hospital,1,1,0.166666666666667,0.25,6,4,Zambia,Eastern Africa
+O2afg.v2,MBUniversity Teaching Hospital,2,1,0.333333333333333,0.25,6,4,Zambia,Eastern Africa
+O2afg.v2,MBHiwot Fana Hospital,3,1,0.428571428571429,0.2,7,5,Ethiopia,Eastern Africa
+OL13,MBHiwot Fana Hospital,1,1,0.142857142857143,0.2,7,5,Ethiopia,Eastern Africa
+O1.v1,MBHiwot Fana Hospital,1,1,0.142857142857143,0.2,7,5,Ethiopia,Eastern Africa
+O1.v2,MBHiwot Fana Hospital,1,1,0.142857142857143,0.2,7,5,Ethiopia,Eastern Africa
+O4,MBHiwot Fana Hospital,1,1,0.142857142857143,0.2,7,5,Ethiopia,Eastern Africa
+O2a.v1,MBQueen Elizabeth Central Hospital,1,1,0.125,0.125,8,8,Malawi,Eastern Africa
+O2afg.v2,MBQueen Elizabeth Central Hospital,1,1,0.125,0.125,8,8,Malawi,Eastern Africa
