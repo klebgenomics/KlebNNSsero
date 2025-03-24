@@ -144,7 +144,7 @@ for(i in 1:length(all_files)){
         prior(student_t(3, 0, 5), class = "sd", group = "Site"),
         prior(student_t(3, 0, 5), class = "sd", group = "locus:subgroup")
       ),
-      iter = 20000,
+      iter = 6000,
       chains = 4,
       cores = 4,
       control = list(adapt_delta = 0.999999, max_treedepth = 55)

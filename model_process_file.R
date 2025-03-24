@@ -12,16 +12,16 @@ library(tidyr)
 library(brms)
 
 
-all_files <- list.files(path = "data_paper/", recursive = TRUE)
+all_files <- list.files(path = "data_core/", recursive = TRUE) # or 'data_LOO/'
 all_files <- all_files[all_files != "site_info.csv"]
 print(all_files)
 
 pattern <- "^(Full|Carba|ESBL|Fatal)_(ALL|min10)_Neonatal_shareable_\\d{8}_(28|365)_filterN10_(K|O|OlocusType)_site_counts_all\\.csv$"
 
-# 2) Identify files that do NOT match
+# Identify files that do NOT match
 bad_files <- all_files[!grepl(pattern, all_files)]
 
-# 3) If the vector of bad_files is non-empty, flag them. Otherwise, confirm all okay.
+# If the vector of bad_files is non-empty, flag them. Otherwise, confirm all okay.
 if (length(bad_files) > 0) {
   warning("The following files do not match the required format:\n", 
           paste(bad_files, collapse = "\n"))
@@ -40,7 +40,7 @@ for(i in seq_along(all_files)) {
   
   # Extract metadata from filename
   subset      <- str_extract(filename, "^(Full|Carba|ESBL|Fatal)")
-  purpose     <- "paper"#ifelse(str_detect(filename, "shareable"), "paper", "BMGF")
+  purpose     <- ifelse(str_detect(filename, "LOO"), "LOO", "core")
   date_stamp  <- str_extract(filename, "\\d{8}")         # Extracts YYYYMMDD
   days        <- str_extract(filename, "_(28|365)_") %>% str_replace_all("_", "")
   what_data   <- str_extract(filename, "ALL|min10")
@@ -191,7 +191,7 @@ for(i in seq_along(all_files)) {
     
     
     # Create the output folder based on the purpose (e.g., "outputs_paper")
-    output_folder <- paste0("outputs_", purpose, "LOO/")
+    output_folder <- paste0("outputs_", purpose, "/")
     if (!dir.exists(output_folder)) {
       dir.create(output_folder, recursive = TRUE)
     }
