@@ -1,5 +1,3 @@
-# README
-
 This repository includes data and code from the paper: "Distribution of capsule and O types in Klebsiella pneumoniae causing neonatal sepsis in Africa and Asia: Bayesian analysis of genome-predicted serotype prevalence and coverage to inform vaccine development" (Stanton et al, 2025).
 
 Inputs to the modelling are in `/data_*`, model outputs are in `/outputs_*`, and the fitted models (R objects) are available in figshare.
