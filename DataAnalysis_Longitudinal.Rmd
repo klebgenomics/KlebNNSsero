@@ -1,0 +1,239 @@
+---
+title: "AntigenPaper_Longitudinal"
+author: "Kat Holt"
+date: "2025-03-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = getwd())
+
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(patchwork)
+library(reshape2)
+library(RColorBrewer)
+library(ggridges)
+library(pals)
+#library(meta)
+#library(ggpol) # used by pyramid plot function
+```
+
+# Setup
+
+## load sero-epi functions
+``` {r}
+
+source("seroepi_functions.R")
+source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/kleborate_functions.R")
+source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/plotting_functions.R")
+
+#source("~/Documents/GitHub/KleborateR/kleborate_functions.R")
+#source("~/Documents/GitHub/KleborateR/plotting_functions.R")
+
+```
+
+## set colour palettes
+``` {r}
+# source: https://davidmathlogic.com/colorblind/#%23D81B60-%231E88E5-%23FFC107-%23004D40
+  
+region_cols <- c(`Southern Asia` ="#D81B60", `Western Africa`="#1E88E5", `Eastern Africa`="#FFC107", `Southern Africa`="#81B1A9", Global="black")
+
+group_cols <- c(All="black", Fatal ="#D81B60", ESBL="#1E88E5", CP="#FFC107")
+```
+
+# temporal variation - longitudinal studies
+``` {r}
+data <- read_csv("Neonatal_shareable_20241002_28.csv")
+
+data_long <- filterData(data, studies=c("Kilifi", "CHRF", "MLW"), years=sort(unique(data$Year)))
+
+data_long$filtered %>% group_by(Year, Study) %>% count()
+
+data_long$filtered %>% 
+  ggplot(aes(x=Year)) + 
+  geom_bar() + 
+  facet_wrap(~Country, ncol=1) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, 
+                                   colour = "black"), 
+        axis.title = element_text(size = 10, colour = "black"),
+        axis.text.y = element_text(size = 10, colour = "black"),
+        plot.title = element_text(hjust=0.5),
+        legend.position = "right") +
+  labs(x="Year", y="", fill="Country")
+
+data_long <- data_long$filtered %>% filter(Year>=2004)
+
+# distribution of longitudinal data for analysis
+timeline_plot_longData <- data_long %>% 
+  ggplot(aes(x=Year, fill=Country)) + 
+  geom_bar() + 
+  facet_wrap(~Country, ncol=1) +
+  geom_vline(xintercept=2017.5) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, 
+                                   colour = "black"), 
+        axis.title = element_text(size = 10, colour = "black"),
+        axis.text.y = element_text(size = 10, colour = "black"),
+        plot.title = element_text(hjust=0.5),
+        legend.position = "right") +
+  labs(x="Year", y="", fill="Country") + 
+  scale_fill_manual(values=unname(region_cols))
+
+timeline_plot_longData
+```
+
+``` {r}
+data_long <- data_long %>%
+  mutate(O_genotype=replace(O_locus_variant, O_locus_variant=="O1 (O1/O2v1)", "O1.v1")) %>%
+  mutate(O_genotype=replace(O_genotype, O_genotype=="O1 (O1/O2v2)", "O1.v2")) %>%
+  mutate(O_genotype=replace(O_genotype, O_genotype=="O1 (O1/O2v3)", "O1v3")) %>%
+  mutate(O_genotype=replace(O_genotype, O_genotype=="O2a (O1/O2v1)", "O2a")) %>%
+  mutate(O_genotype=replace(O_genotype, O_genotype=="O2a (O1/O2v3)", "O2a.v3")) %>%
+  mutate(O_genotype=replace(O_genotype, O_genotype=="O2afg (O1/O2v2)", "O2afg"))
+  
+data_long_thru2017 <- data_long %>% filter(Year<=2017)
+data_long_post2017 <- data_long %>% filter(Year>2017)
+
+dim(data_long_thru2017)
+dim(data_long_post2017)
+
+# combined
+global_thru2017_ranks <- data_long_thru2017 %>% group_by(K_locus) %>% count() %>% ungroup() %>% arrange(-n) %>% mutate(rank=row_number()) %>% rename(locus=K_locus) %>% select(-n)
+
+
+# coverage in post
+long_cov <- coverageAnalysis(prepCoverageData(data_long_post2017), ranks=global_thru2017_ranks, maxRank=20)
+
+long_globalRank_mlwCov <- coverageAnalysis(prepCoverageData(data_long_post2017 %>% filter(Country=="Malawi")), ranks=global_thru2017_ranks, maxRank=20)
+
+long_globalRank_kenyaCov <- coverageAnalysis(prepCoverageData(data_long_post2017 %>% filter(Country=="Kenya")), ranks=global_thru2017_ranks, maxRank=20)
+
+long_globalRank_bdCov <- coverageAnalysis(prepCoverageData(data_long_post2017 %>% filter(Country=="Bangladesh")), ranks=global_thru2017_ranks, maxRank=20)
+
+
+
+# coverage in training
+longIn_cov <- coverageAnalysis(prepCoverageData(data_long_thru2017), ranks=global_thru2017_ranks, maxRank=20)
+
+longIn_globalRank_mlwCov <- coverageAnalysis(prepCoverageData(data_long_thru2017 %>% filter(Country=="Malawi")), ranks=global_thru2017_ranks, maxRank=20)
+
+longIn_globalRank_kenyaCov <- coverageAnalysis(prepCoverageData(data_long_thru2017 %>% filter(Country=="Kenya")), ranks=global_thru2017_ranks, maxRank=20)
+
+longIn_globalRank_bdCov <- coverageAnalysis(prepCoverageData(data_long_thru2017 %>% filter(Country=="Bangladesh")), ranks=global_thru2017_ranks, maxRank=20)
+
+```
+
+``` {r}
+coverage_plot_long_globalRank_country <- long_cov$cov_table_long %>% mutate(group="All") %>%
+    bind_rows(long_globalRank_bdCov$cov_table_long %>% mutate(group="Bangladesh")) %>% 
+    bind_rows(long_globalRank_kenyaCov$cov_table_long %>% mutate(group="Kenya")) %>%
+    bind_rows(long_globalRank_mlwCov$cov_table_long %>% mutate(group="Malawi")) %>%
+    mutate(group=fct_relevel(group, c("All", "Bangladesh", "Kenya", "Malawi"))) %>%
+    filter(type=="raw") %>%
+    filter(rank<=20) %>%
+    ggplot(aes(x=rank, y=value*100, group=group)) +
+    geom_hline(yintercept=70, linetype=2, col="darkgrey") + 
+    geom_line(aes(col=group), lwd=0.8) + 
+    theme_bw() +
+    ylim(0,100) + 
+    labs(x=NULL, y="Cumulative coverage (%)", colour="Type") +
+    theme(axis.text.x = element_text(angle=90))+ 
+    scale_x_continuous(breaks=seq(1,20), labels=global_thru2017_ranks$locus[1:20]) + 
+    scale_color_manual(values=c("black",unname(region_cols)))
+
+coverage_plot_longPre_globalRank_country <- longIn_cov$cov_table_long %>% mutate(group="All") %>%
+    bind_rows(longIn_globalRank_bdCov$cov_table_long %>% mutate(group="Bangladesh")) %>% 
+    bind_rows(longIn_globalRank_kenyaCov$cov_table_long %>% mutate(group="Kenya")) %>%
+    bind_rows(longIn_globalRank_mlwCov$cov_table_long %>% mutate(group="Malawi")) %>%
+    mutate(group=fct_relevel(group, c("All", "Bangladesh", "Kenya", "Malawi"))) %>%
+    filter(type=="raw") %>%
+    filter(rank<=20) %>%
+    ggplot(aes(x=rank, y=value*100, group=group)) +
+    geom_hline(yintercept=70, linetype=2, col="darkgrey") + 
+    geom_line(aes(col=group), lwd=0.8) + 
+    theme_bw() +
+    ylim(0,100) + 
+    labs(x=NULL, y="Cumulative coverage (%)", colour="Type") +
+    theme(axis.text.x = element_text(angle=90))+ 
+    scale_x_continuous(breaks=seq(1,20), labels=global_thru2017_ranks$locus[1:20]) + 
+    scale_color_manual(values=c("black",unname(region_cols)))
+
+```
+
+# O types
+``` {r}
+
+# combined
+global_thru2017_ranks_O <- data_long_thru2017 %>% group_by(O_genotype) %>% count() %>% ungroup() %>% arrange(-n) %>% mutate(rank=row_number()) %>% rename(locus=O_genotype) %>% select(-n)
+
+
+# coverage in post
+long_cov_O <- coverageAnalysis(prepCoverageDataO(data_long_post2017), ranks=global_thru2017_ranks_O, maxRank=10)
+
+long_globalRank_mlwCov_O <- coverageAnalysis(prepCoverageDataO(data_long_post2017 %>% filter(Country=="Malawi")), ranks=global_thru2017_ranks_O, maxRank=10)
+
+long_globalRank_kenyaCov_O <- coverageAnalysis(prepCoverageDataO(data_long_post2017 %>% filter(Country=="Kenya")), ranks=global_thru2017_ranks_O, maxRank=10)
+
+long_globalRank_bdCov_O <- coverageAnalysis(prepCoverageDataO(data_long_post2017 %>% filter(Country=="Bangladesh")), ranks=global_thru2017_ranks_O, maxRank=10)
+
+
+
+# coverage in training
+longIn_cov_O <- coverageAnalysis(prepCoverageDataO(data_long_thru2017), ranks=global_thru2017_ranks_O, maxRank=10)
+
+longIn_globalRank_mlwCov_O <- coverageAnalysis(prepCoverageDataO(data_long_thru2017 %>% filter(Country=="Malawi")), ranks=global_thru2017_ranks_O, maxRank=10)
+
+longIn_globalRank_kenyaCov_O <- coverageAnalysis(prepCoverageDataO(data_long_thru2017 %>% filter(Country=="Kenya")), ranks=global_thru2017_ranks_O, maxRank=10)
+
+longIn_globalRank_bdCov_O <- coverageAnalysis(prepCoverageDataO(data_long_thru2017 %>% filter(Country=="Bangladesh")), ranks=global_thru2017_ranks_O, maxRank=10)
+
+```
+
+``` {r}
+coverage_plot_long_globalRank_country_O <- long_cov_O$cov_table_long %>% mutate(group="All") %>%
+    bind_rows(long_globalRank_bdCov_O$cov_table_long %>% mutate(group="Bangladesh")) %>% 
+    bind_rows(long_globalRank_kenyaCov_O$cov_table_long %>% mutate(group="Kenya")) %>%
+    bind_rows(long_globalRank_mlwCov_O$cov_table_long %>% mutate(group="Malawi")) %>%
+    mutate(group=fct_relevel(group, c("All", "Bangladesh", "Kenya", "Malawi"))) %>%
+    filter(type=="raw") %>%
+    filter(rank<=10) %>%
+    ggplot(aes(x=rank, y=value*100, group=group)) +
+    geom_hline(yintercept=70, linetype=2, col="darkgrey") + 
+    geom_line(aes(col=group), lwd=0.8) + 
+    theme_bw() +
+    ylim(0,100) + 
+    labs(x=NULL, y="Cumulative coverage (%)", colour="Type") +
+    theme(axis.text.x = element_text(angle=90))+ 
+    scale_x_continuous(breaks=seq(1,10), labels=global_thru2017_ranks_O$locus[1:10]) + 
+    scale_color_manual(values=c("black",unname(region_cols)))
+
+coverage_plot_longPre_globalRank_country_O <- longIn_cov$cov_table_long %>% mutate(group="All") %>%
+    bind_rows(longIn_globalRank_bdCov$cov_table_long %>% mutate(group="Bangladesh")) %>% 
+    bind_rows(longIn_globalRank_kenyaCov$cov_table_long %>% mutate(group="Kenya")) %>%
+    bind_rows(longIn_globalRank_mlwCov$cov_table_long %>% mutate(group="Malawi")) %>%
+    mutate(group=fct_relevel(group, c("All", "Bangladesh", "Kenya", "Malawi"))) %>%
+    filter(type=="raw") %>%
+    filter(rank<=10) %>%
+    ggplot(aes(x=rank, y=value*100, group=group)) +
+    geom_hline(yintercept=70, linetype=2, col="darkgrey") + 
+    geom_line(aes(col=group), lwd=0.8) + 
+    theme_bw() +
+    ylim(0,100) + 
+    labs(x=NULL, y="Cumulative coverage (%)", colour="Type") +
+    theme(axis.text.x = element_text(angle=90))+ 
+    scale_x_continuous(breaks=seq(1,10), labels=global_thru2017_ranks_O$locus[1:10]) + 
+    scale_color_manual(values=c("black",unname(region_cols)))
+
+```
+
+``` {r}
+timeline_plot_longData / (coverage_plot_longPre_globalRank_country + ggtitle("K coverage, Training period") + coverage_plot_long_globalRank_country + ggtitle("K coverage, Post-training period") + plot_layout(guides="collect")) / (coverage_plot_long_globalRank_country_O + ggtitle("O coverage, Training period") + coverage_plot_longPre_globalRank_country_O + ggtitle("O coverage, Post-training period") + plot_layout(guides="collect")) +plot_layout(heights=c(3,2,2))
+
+ggsave("figures/FigS18_Longitudinal.pdf", height=9, width=8)
+ggsave("figures/FigS18_Longitudinal.png", height=9, width=8)
+```
+

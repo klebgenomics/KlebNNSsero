@@ -1,0 +1,604 @@
+---
+title: "DataAnalysis"
+author: "Kat Holt"
+date: "2025-03-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = getwd())
+
+library(ggplot2) # v3.5.1
+library(tidyverse) # v2.0.0
+library(dplyr) # v1.1.4
+library(patchwork) # v1.3.0
+library(pals) # v.19
+library(rnaturalearth) # v1.0.1
+library(sf) # v1.0-17
+```
+
+# Setup
+
+## load kleborate processing functions
+``` {r}
+
+source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/kleborate_functions.R")
+
+source("seroepi_functions.R")
+```
+
+## set colour palettes
+``` {r}
+# source: https://davidmathlogic.com/colorblind/#%23D81B60-%231E88E5-%23FFC107-%23004D40
+  
+region_cols <- c(`Southern Asia` ="#D81B60", `Western Africa`="#1E88E5", `Eastern Africa`="#FFC107", `Southern Africa`="#81B1A9", Global="black")
+```
+
+## load data on included samples - Table S3
+``` {r}
+data_NNS_sites10 <- read_tsv("tables/TableS3.tsv")
+```
+
+# countries included
+``` {r}
+countries <- data_NNS_sites10 %>%
+  group_by(Country, Region) %>% 
+  summarise(n=n()) %>%
+  arrange(Country) %>% 
+  mutate(Region=fct_relevel(Region,
+    c("Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa"))) %>%
+  arrange(Region) %>% select(Region, Country, n)
+
+countries
+```
+
+# Fig1a - timeline of included data
+``` {r}
+timeline_WA <- timelineBarplot(data_NNS_sites10, "Western Africa", cols=c("#e6194B", "#4363d8"), ylim=c(0,150))
+timeline_EA <- timelineBarplot(data_NNS_sites10, "Eastern Africa", cols=c( "#f58231", "#FAC124","#e6194B", "#EFBBBB", "#99ccff", "#4363d8", "#000000", "#994c00", "#4C9F3B", "#9CDA90"))
+timeline_SA <- timelineBarplot(data_NNS_sites10, "Southern Africa", cols=c("#4363d8", "#e6194B", "#f58231", "#EFBBBB", "#FAC124"), ylim=c(0,150))
+timeline_SAs <- timelineBarplot(data_NNS_sites10, "Southern Asia", cols=c("#FAC124", "#e6194B", "#4363d8", "#99ccff", "#4C9F3B", "#9CDA90"))
+
+timeline_barplot <- timeline_WA+timeline_SA + timeline_EA + timeline_SAs + plot_layout(ncol = 2, axes="collect", heights=c(1,2)) & theme(legend.justification = "left")
+
+timeline_barplot + patchwork::plot_annotation(title="a")
+```
+
+# Fig 1b - map of study sites
+```{r }
+se_site_coords <- read_csv("tables/site_coordinates.csv", show_col_types=F) 
+
+se_country_count <- data_NNS_sites10 %>% 
+    mutate(Study_Site=paste0(Study, "_", Site)) %>%
+    group_by(Country) %>% 
+    reframe(n_samples = n(),
+            n_sites_per_country = n_distinct(Study_Site)) %>% 
+    rename("country" = "Country")
+
+get_breaks_and_mean <- function(vec, break_interval) {
+  min_val <- min(vec)
+  max_val <- max(vec)
+  vals_mean <- mean(c(min_val, max_val))
+  breaks <- seq(ceiling(min_val / break_interval) * break_interval, 
+                floor(max_val / break_interval) * break_interval, 
+                by = break_interval)
+  return(list("vals_mean"=vals_mean, "breaks"=breaks))
+}
+
+se_breaks <- get_breaks_and_mean(se_country_count$n_samples, 100)
+
+# get africa and asia map
+africa_and_asia <- 
+    rnaturalearth::ne_countries(scale="large", type="countries",
+                                continent=c("africa", "asia")) %>% 
+    mutate(country = countrycode::countryname(name))
+
+# make sf
+se_site_counts_sf <- data_NNS_sites10 %>% 
+    group_by(Country, Site, Study) %>% reframe(n_samples_per_site = n()) %>% 
+    group_by(Country) %>% add_count(name="n_sites_per_country") %>% 
+    rename("country" = "Country") %>%
+    group_by(Study) %>% add_count(name="n_sites_per_study") %>%
+    ungroup() %>%
+    left_join(africa_and_asia, by = c("country")) %>% 
+    mutate(study_lab = if_else(n_sites_per_study==1, "Other (single site)", Study)) %>%
+    mutate(study_lab = if_else(study_lab == "NeoOBS_India", "NeoOBS", study_lab)) %>% 
+    left_join(se_site_coords %>% select(Site, Long_city, Lat_city),
+              by = "Site") %>% 
+    dplyr::mutate_at(vars(Long_city, Lat_city), as.numeric) %>% 
+    # Slightly jitter overlapping sites
+    mutate(Lat_city = case_when(
+        Study == "BARNARDS" & Site == "BABC" ~ Lat_city + 0.5,
+        Study == "BARNARDS" & Site == "BAZAT" ~ Lat_city + 0.5,
+        Study == "NeoBAC" & Site == "Mbagathi" ~ Lat_city - 0.25,
+        TRUE ~ Lat_city
+    )) %>% 
+    arrange(desc(n_samples_per_site)) %>% 
+    sf::st_as_sf()    
+
+se_region_plot <- africa_and_asia %>% 
+    dplyr::left_join(se_country_count, by = c("country")) %>% 
+    ggplot() +
+    geom_sf(aes(fill = n_samples)) +
+    scale_fill_gradient2(low="#ffd9b3", high="#0066cc", mid="#b3e6b3",
+                         midpoint=se_breaks[[1]],
+                         na.value="white", breaks=se_breaks[[2]],
+                         name="N isolates \nper country",
+                         guide = guide_colorbar(order=1)) +
+    geom_point(data=se_site_counts_sf,
+               aes(x=Long_city, y=Lat_city, size=n_samples_per_site),
+               fill="black", shape=21, stroke=0.25, color="grey90") +
+    scale_size_continuous(range=c(1, 5), name = "N isolates \nper site",
+                          guide = guide_legend(order=2, override.aes=list(stroke=0))) +
+    ggthemes::theme_few() + 
+    theme(axis.ticks = element_blank(), axis.text = element_blank(),
+          axis.title = element_blank(), panel.border = element_blank()) +
+    guides(color="none") + theme(legend.text = element_text(size=7), legend.key.size=unit(6,"pt"), legend.title = element_text(size=9))
+
+se_region_plot
+
+```
+
+
+# Fig 1: sample timeline barplots plus map
+``` {r, eval=F}
+patchwork::wrap_elements(panel=timeline_barplot) / patchwork::wrap_elements(se_region_plot) + patchwork::plot_annotation(tag_levels ="a")
+
+ggsave("figures/Fig1_timelineRegionCountryStudy_siteMap.pdf", width=7, height=7)
+ggsave("figures/Fig1_timelineRegionCountryStudy_siteMap.png", width=7, height=7)
+
+```
+
+
+
+# Table S2 - study info
+``` {r}
+study_summary <- data_NNS_sites10 %>%
+  group_by(Study) %>% 
+  summarise(`Unique Countries`=length(unique(Country)),
+          `Unique Sites`=length(unique(Site)),
+            `Isolates included`=n(),
+            `Unique K loci`=length(unique(K_locus[K_locus_confidence =="Typeable"])), 
+            `Unique O types`=length(unique(O_genotype[O_locus_confidence =="Typeable"])))
+
+# write to file
+study_summary %>% 
+  write_csv(file="tables/TableS2_studyInfo.csv")
+```
+
+
+## Table 1- summarise by country/study/region
+``` {r}
+overall_summary <- data_NNS_sites10 %>%
+  summarise(`Unique Sites`=length(unique(Site)),
+            N=n(),
+            `Unique K loci`=length(unique(K_locus[K_locus_confidence =="Typeable"])), 
+            `Unique O types`=length(unique(O_genotype[O_locus_confidence =="Typeable"]))) %>%
+  mutate(Country="-", Study="-", Period="-", Region="Total")
+
+region_summary <- data_NNS_sites10 %>%
+  group_by(Region) %>% 
+  summarise(`Unique Sites`=length(unique(Site)),
+            N=n(),
+            `Unique K loci`=length(unique(K_locus[K_locus_confidence =="Typeable"])), 
+            `Unique O types`=length(unique(O_genotype[O_locus_confidence =="Typeable"]))) %>%
+  mutate(Country="All", Study="-", Period="-")
+
+country_summary <- data_NNS_sites10 %>%
+  group_by(Region, Country, Study) %>% 
+  summarise(`Unique Sites`=length(unique(Site)),
+            N=n(),
+            `Unique K loci`=length(unique(K_locus[K_locus_confidence =="Typeable"])), 
+            `Unique O types`=length(unique(O_genotype[O_locus_confidence =="Typeable"])), 
+            min=min(Year), max=max(Year)) %>%
+  mutate(Period=paste0(min, "-", max)) %>%
+  ungroup() %>%
+  bind_rows(region_summary) %>%
+  bind_rows(overall_summary) %>%
+  select(-c(min, max)) %>% relocate(Period, .after=N) %>%
+  arrange(Country) %>% 
+  mutate(Region=fct_relevel(Region,c("Eastern Africa", "Southern Africa", "Western Africa", "Southern Asia", "Total"))) %>%
+  arrange(Region) 
+
+
+# write to file
+write.csv(country_summary, file="tables/Table1_country_study_breakdown.csv", row.names=F)
+```
+
+
+# Fig S2 - overview raw data
+``` {r}
+
+k_raw_count <- data_NNS_sites10 %>% filter(K_locus_confidence !="Untypeable") %>%
+  group_by(K_locus) %>% count() %>% ungroup() %>%
+  mutate(p=n/nrow(data_NNS_sites10)) %>%
+  arrange(-n) %>%
+  mutate(rawRank=row_number())
+
+k_raw_bar <- k_raw_count %>% 
+  filter(n >= 4) %>%
+  ggplot(aes(x=p*100, y=K_locus)) + 
+  geom_col(fill="navy") +
+  ylim(rev(k_raw_count$K_locus[k_raw_count$n>=4])) +
+  labs(y=NULL, x="Crude prevalence (%)") + 
+  theme_bw() + 
+  scale_x_reverse() +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+
+# number of K included
+length(k_raw_count$K_locus[k_raw_count$n>=4])
+
+KL_country_jitterO <- data_NNS_sites10 %>% 
+  mutate(O_genotype_common = O_genotype) %>%
+  mutate(O_genotype_common = replace(O_genotype_common, O_genotype_common %in% c("O1.v3", "O12", "O2a.v3", "OL102", "OL103", "OL104"), "other")) %>%
+  ggplot(aes(x=Country, y=K_locus, col=O_genotype_common)) + 
+  geom_jitter(alpha=0.5) +
+  ylim(rev(k_raw_count$K_locus[k_raw_count$n>=4])) + 
+  xlim(c("Bangladesh", "India", "Pakistan", "Ethiopia", "Kenya", "Rwanda", "Tanzania", "Malawi", "Zambia", "South Africa", "Botswana", "Nigeria", "Ghana")) +
+  theme_bw() + 
+  labs(col="O type", y=NULL) +
+  theme(axis.text.x = element_text(angle=45, hjust=1, size=10), 
+        axis.text.y=element_text(size=10)) +
+  scale_colour_manual(values=c(`O1.v1`="#009E73", 
+                               `O3/O3a`="#cc3300",
+                               `O2a`="#F0E442",
+                               `O2afg`="#ff8c1a",
+                               `O1.v2`="#0072B2",
+                             #  `O1 (O1/O2v1)`="#56B4E9",
+                               `O4`="#CC79A7",
+                               `O3b`="pink",
+                               `O5`="purple",
+                               `OL13`="#33cccc",
+                                `other`="black"))
+
+
+```
+
+
+``` {r}
+STfreq <- data_NNS_sites10 %>% 
+  group_by(ST) %>% count() %>% arrange(-n)
+
+k_raw_bar_ST <- data_NNS_sites10 %>%
+  mutate(ST_common = if_else(ST %in% STfreq$ST[STfreq$n>10], ST, "other")) %>%
+  mutate(ST_common=fct_relevel(ST_common, "other", after=Inf)) %>%
+  ggplot(aes(y=K_locus, fill=ST_common)) + 
+  geom_bar(position="fill") +
+  ylim(rev(k_raw_count$K_locus[k_raw_count$n>=4])) + 
+  labs(fill="ST", y=NULL, x="ST") + 
+  scale_fill_manual(values=c("black","skyblue",unname(pals::alphabet()),"grey")) +
+  theme_bw() + 
+  theme(legend.position="left") +
+  scale_x_reverse() +
+  scale_x_continuous(breaks=c(0,0.5,1)) +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank()) + 
+  guides(fill = guide_legend(title = "ST", ncol = 1))
+
+
+k_raw_bar_O <- data_NNS_sites10 %>%
+  mutate(O_genotype_common = O_genotype) %>%
+  mutate(O_genotype_common = replace(O_genotype_common, O_genotype_common %in% c("O1.v3", "O12", "O2a.v3", "OL102", "OL103", "OL104"), "other")) %>%
+  ggplot(aes(y=K_locus, fill=O_genotype_common)) + 
+  geom_bar(position="fill", alpha=0.5) +
+  ylim(rev(k_raw_count$K_locus[k_raw_count$n>=4])) + 
+  labs(fill="O type", y=NULL, x="O type") + 
+  scale_fill_manual(values=c(`O1.v1`="#009E73", 
+                               `O3/O3a`="#cc3300",
+                               `O2a`="#F0E442",
+                               `O2afg`="#ff8c1a",
+                               `O1.v2`="#0072B2",
+                             #  `O1 (O1/O2v1)`="#56B4E9",
+                               `O4`="#CC79A7",
+                               `O3b`="pink",
+                               `O5`="purple",
+                               `OL13`="#33cccc",
+                                `other`="black")) +
+  theme_bw() + 
+  theme(legend.position="right") +
+  scale_x_continuous(breaks=c(0,0.5,1)) +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank()) + 
+  guides(fill = guide_legend(title = "O type", ncol = 1))
+
+```
+
+``` {r}
+k_raw_bar_ST + k_raw_bar + ggtitle("a) Crude K frequency") + KL_country_jitterO + ggtitle("b) K distribution by country") + theme(legend.position="none") + k_raw_bar_O + patchwork::plot_layout(widths=c(1,2,4,1))
+
+ggsave(file="figures/FigS2_raw_K_country_O.pdf", width=9, height=11)
+ggsave(file="figures/FigS2_raw_K_country_O.png", width=9, height=11)
+```
+
+
+# Fig S3 - temporal spread of K/O types per site
+``` {r}
+commonKO <- data_NNS_sites10 %>% 
+  mutate(Clone=paste(ST, K_locus, O_type)) %>% 
+  group_by(Clone) %>% count() %>% arrange(-n)
+
+data_NNS_sites10 %>% 
+    mutate(Clone=paste(ST, K_locus, O_type)) %>% 
+    mutate(Clone=replace(Clone, !(Clone %in% commonKO$Clone[commonKO$n>15]), "other")) %>%
+    mutate(SiteLabel=paste0("Site:", Site)) %>%
+    ggplot(aes(x=Year, fill=Clone)) + 
+    geom_bar(position="fill") +
+    theme_bw() + 
+    theme(axis.text.x = element_text(angle=45, hjust=1, size=10), 
+          axis.text.y=element_text(size=10)) + facet_wrap(~Region+Country+SiteLabel) +
+    scale_fill_manual(values=c("lightgrey",unname(pals::alphabet()))) + 
+  theme(legend.position="bottom")
+
+ggsave(file="figures/FigS3_clones_site_year.pdf", width=9, height=12)
+ggsave(file="figures/FigS3_clones_site_year.png", width=9, height=12)
+```
+
+# compare crude K prevalence at different time thresholds
+
+``` {r}
+alternative_clusters <- read_csv("tables/alternative_clusters.csv")
+
+data_NNS_sites10 <- data_NNS_sites10 %>% left_join(alternative_clusters)
+```
+
+``` {r}
+K_crude_365days <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster365", "Site")) %>%
+  mutate(raw_prop365 = raw_count/nrow(data_NNS_sites10)) %>%
+  mutate(adj_prop365 = adj_count/length(unique(data_NNS_sites10$Cluster365))) %>%
+  mutate(rawRank365=row_number(desc(raw_count))) %>%
+  mutate(adjRank365=row_number(desc(adj_count))) 
+
+K_crude_56days <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster56", "Site")) %>%
+  mutate(raw_prop56 = raw_count/nrow(data_NNS_sites10)) %>%
+  mutate(adj_prop56 = adj_count/length(unique(data_NNS_sites10$Cluster56))) %>%
+  mutate(rawRank56=row_number(desc(raw_count))) %>%
+  mutate(adjRank56=row_number(desc(adj_count))) 
+
+K_crude_14days <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster14", "Site")) %>%
+  mutate(raw_prop14 = raw_count/nrow(data_NNS_sites10)) %>%
+  mutate(adj_prop14 = adj_count/length(unique(data_NNS_sites10$Cluster14))) %>%
+  mutate(rawRank14=row_number(desc(raw_count))) %>%
+  mutate(adjRank14=row_number(desc(adj_count))) 
+
+K_crude_7days <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster7", "Site")) %>%
+  mutate(raw_prop7 = raw_count/nrow(data_NNS_sites10)) %>%
+  mutate(adj_prop7 = adj_count/length(unique(data_NNS_sites10$Cluster7))) %>%
+  mutate(rawRank7=row_number(desc(raw_count))) %>%
+  mutate(adjRank7=row_number(desc(adj_count))) 
+
+K_crude_28days <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster", "Site")) %>%
+  mutate(raw_prop28 = raw_count/nrow(data_NNS_sites10)) %>%
+  mutate(adj_prop28 = adj_count/length(unique(data_NNS_sites10$Cluster))) %>%
+  mutate(rawRank28=row_number(desc(raw_count))) %>%
+  mutate(adjRank28=row_number(desc(adj_count))) 
+
+K_crude_thresholds <- K_crude_7days %>% 
+  full_join(K_crude_14days, by=c("K_locus")) %>% 
+  full_join(K_crude_28days, by=c("K_locus")) %>% 
+  full_join(K_crude_56days, by=c("K_locus")) %>% 
+  full_join(K_crude_365days, by=c("K_locus"))
+
+temporal_cluster_threshold_proportion <- K_crude_thresholds %>% 
+  select(c(K_locus,adj_prop365, adj_prop56, adj_prop28, adj_prop14, adj_prop7)) %>% 
+  pivot_longer(names_to="days", cols=starts_with("adj_prop"), names_prefix="adj_prop", values_to="adj_prop") %>%
+  mutate(days=factor(days)) %>%
+  bind_rows(K_crude_thresholds %>% select(K_locus, raw_prop7) %>% mutate(days="0") %>% rename(adj_prop=raw_prop7)) %>%
+  mutate(days=fct_relevel(days,c("0", "7", "14", "28", "56", "365"))) %>%
+  ggplot(aes(y=K_locus, x=adj_prop, group=days, col=days)) +
+  geom_point(alpha=0.5) +
+  scale_y_discrete(limits=rev(K_crude_thresholds$K_locus[K_crude_thresholds$adjRank28])) +
+  theme_bw() + labs(x="Cluster-adjusted proportion", y="", title="Effect of temporal clustering threshold",subtitle="on global cluster-adjusted proportion estimate") +
+  scale_color_manual(values=c("forestgreen","orange","black","red","purple","blue"))
+
+temporal_cluster_threshold_rank <- K_crude_thresholds %>% 
+  select(c(K_locus, starts_with("adjRank"), rawRank7)) %>% 
+  pivot_longer(names_to="days", cols=starts_with("adjRank"), names_prefix="adjRank", values_to="adjRank") %>%
+  mutate(days=factor(days)) %>%
+  bind_rows(K_crude_thresholds %>% select(K_locus, rawRank7) %>% mutate(days="0") %>% rename(adjRank=rawRank7)) %>%
+  mutate(days=fct_relevel(days,c("0", "7", "14", "28", "56", "365"))) %>%
+  ggplot(aes(y=K_locus, x=adjRank, group=days, col=days)) +
+  geom_jitter(alpha=0.5) +
+  scale_y_discrete(limits=rev(K_crude_28days$K_locus[K_crude_28days$adjRank28])) +
+  theme_bw() + labs(x="Cluster-adjusted rank", y="", title="Effect of temporal clustering threshold",subtitle="on global cluster-adjusted ranking") +
+  scale_color_manual(values=c("forestgreen","orange","black","red","purple","blue"))
+
+```
+
+``` {r}
+temporal_cluster_threshold_proportion + temporal_cluster_threshold_rank
+
+ggsave(file="figures/FigS16_ClusterDaysThreshold.pdf", width=9, height=12)
+ggsave(file="figures/FigS16_ClusterDaysThreshold.png", width=9, height=12)
+
+```
+
+
+# compare crude K prevalence at different SNP thresholds
+
+``` {r}
+K_crude_1SNP <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster1SNP", "Site")) %>%
+  mutate(adj_prop1 = adj_count/length(unique(data_NNS_sites10$Cluster1SNP))) %>%
+  mutate(raw_prop = raw_count/nrow(data_NNS_sites10)) %>%
+  mutate(adjRank1=row_number(desc(adj_count))) 
+
+K_crude_2SNP <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster2SNP", "Site")) %>%
+  mutate(adj_prop2 = adj_count/length(unique(data_NNS_sites10$Cluster2SNP))) %>%
+  mutate(adjRank2=row_number(desc(adj_count))) 
+
+K_crude_3SNP <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster3SNP", "Site")) %>%
+  mutate(adj_prop3 = adj_count/length(unique(data_NNS_sites10$Cluster3SNP))) %>%
+  mutate(adjRank3=row_number(desc(adj_count))) 
+
+K_crude_5SNP <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster5SNP", "Site")) %>%
+  mutate(adj_prop5 = adj_count/length(unique(data_NNS_sites10$Cluster5SNP))) %>%
+  mutate(adjRank5=row_number(desc(adj_count))) 
+
+K_crude_10SNP <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster10SNP", "Site")) %>%
+  mutate(adj_prop10 = adj_count/length(unique(data_NNS_sites10$Cluster10SNP))) %>%
+  mutate(adjRank10=row_number(desc(adj_count))) 
+ 
+K_crude_15SNP <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster15SNP", "Site")) %>%
+  mutate(adj_prop15 = adj_count/length(unique(data_NNS_sites10$Cluster15SNP))) %>%
+  mutate(adjRank15=row_number(desc(adj_count))) 
+
+K_crude_20SNP <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster20SNP", "Site")) %>%
+  mutate(adj_prop20 = adj_count/length(unique(data_NNS_sites10$Cluster20SNP))) %>%
+  mutate(adjRank20=row_number(desc(adj_count))) 
+
+K_crude_25SNP <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster25SNP", "Site")) %>%
+  mutate(adj_prop25 = adj_count/length(unique(data_NNS_sites10$Cluster25SNP))) %>%
+  mutate(adjRank25=row_number(desc(adj_count))) 
+
+K_crude_50SNP <- data_NNS_sites10 %>%
+  filter(K_locus_confidence != "Untypeable") %>%
+  raw_adj_prop(grouping_vars = c("K_locus"), summarise_by = "K_locus", adj_vars = c("Cluster50SNP", "Site")) %>%
+  mutate(adj_prop50 = adj_count/length(unique(data_NNS_sites10$Cluster50SNP))) %>%
+  mutate(adjRank50=row_number(desc(adj_count))) 
+
+K_crude_thresholds_snps <- K_crude_10SNP %>% 
+  full_join(K_crude_1SNP, by=c("K_locus"))%>% 
+  full_join(K_crude_2SNP, by=c("K_locus")) %>% 
+  full_join(K_crude_3SNP, by=c("K_locus")) %>% 
+  full_join(K_crude_5SNP, by=c("K_locus")) %>% 
+  full_join(K_crude_15SNP, by=c("K_locus")) %>% 
+  full_join(K_crude_20SNP, by=c("K_locus")) %>% 
+  full_join(K_crude_25SNP, by=c("K_locus")) %>% 
+  full_join(K_crude_50SNP, by=c("K_locus"))
+
+snp_cluster_threshold_proportion <- K_crude_thresholds_snps %>% 
+  select(c(K_locus,adj_prop1, adj_prop2, adj_prop3, adj_prop5, adj_prop10,adj_prop15, adj_prop20, adj_prop25, adj_prop50)) %>% 
+  pivot_longer(names_to="SNPs", cols=starts_with("adj_prop"), names_prefix="adj_prop", values_to="adj_prop") %>%
+  mutate(SNPs=factor(SNPs)) %>%
+  mutate(SNPs=fct_relevel(SNPs,c( "1", "2", "3", "5", "15", "20", "25", "50", "10"))) %>%
+  ggplot(aes(y=K_locus, x=adj_prop, group=SNPs, col=SNPs)) +
+  geom_point(alpha=0.5) +
+  scale_y_discrete(limits=rev(K_crude_thresholds_snps$K_locus[K_crude_thresholds_snps$adjRank10])) +
+  theme_bw() + labs(x="Cluster-adjusted proportion", y="", title="Effect of SNP clustering threshold",subtitle="on global cluster-adjusted proportion estimate") +
+  scale_color_manual(values=c(colorRampPalette(c("gold", "blue"))(8),"red"))
+
+snp_cluster_threshold_rank <- K_crude_thresholds_snps %>% 
+  select(c(K_locus, starts_with("adjRank"))) %>% 
+  pivot_longer(names_to="SNPs", cols=starts_with("adjRank"), names_prefix="adjRank", values_to="adjRank") %>%
+  mutate(SNPs=factor(SNPs)) %>%
+  mutate(SNPs=fct_relevel(SNPs,c( "1", "2", "3", "5", "15", "20", "25", "50", "10"))) %>%
+  ggplot(aes(y=K_locus, x=adjRank, group=SNPs, col=SNPs)) +
+  geom_jitter(alpha=0.5) +
+  scale_y_discrete(limits=rev(K_crude_thresholds_snps$K_locus[K_crude_thresholds_snps$adjRank10])) +
+  theme_bw() + labs(x="Cluster-adjusted rank", y="", title="Effect of SNP clustering threshold",subtitle="on global cluster-adjusted ranking") +
+  scale_color_manual(values=c(colorRampPalette(c("gold", "blue"))(8),"red"))
+
+```
+
+``` {r}
+snp_cluster_threshold_proportion + snp_cluster_threshold_rank
+
+ggsave(file="figures/FigS17_ClusterSNPsThreshold.pdf", width=9, height=12)
+ggsave(file="figures/FigS17_ClusterSNPsThreshold.png", width=9, height=12)
+
+```
+
+
+# summary numbers for Results text
+``` {r}
+
+# number of samples
+nrow(data_NNS_sites10)
+
+# number of sites
+data_NNS_sites10 %>% group_by(Site) %>% count() %>% nrow()
+
+# number of countries
+data_NNS_sites10 %>% group_by(Country) %>% count() %>% nrow()
+
+
+# untypeable
+data_NNS_sites10 %>% filter(K_locus_confidence=="Untypeable") %>% nrow()
+data_NNS_sites10 %>% filter(K_locus_confidence=="Untypeable") %>% nrow()
+
+
+# total K
+data_NNS_sites10 %>% filter(K_locus_confidence !="Untypeable") %>% group_by(K_locus) %>% count() %>% nrow()
+
+# common K (≥5% each)
+data_NNS_sites10 %>% filter(K_locus_confidence !="Untypeable") %>% group_by(K_locus) %>% count() %>% mutate(p=n/nrow(data_NNS_sites10)) %>% filter(p>=0.05)
+
+# fraction accounted for by common K
+data_NNS_sites10 %>% filter(K_locus_confidence !="Untypeable") %>% group_by(K_locus) %>% count() %>% mutate(p=n/nrow(data_NNS_sites10)) %>% filter(p>=0.05) %>% pull(p) %>% sum()
+
+
+# number of countries per K
+k_country <- data_NNS_sites10 %>% filter(K_locus_confidence !="Untypeable") %>% group_by(K_locus) %>% summarise(countries=length(unique(Country)))
+
+max(k_country$countries)
+k_country %>% arrange(-countries)
+
+
+# number of regions per K
+k_region <- data_NNS_sites10 %>% filter(K_locus_confidence !="Untypeable") %>% group_by(K_locus) %>% summarise(regions=length(unique(Region))) %>% arrange(-regions)
+
+# Ks found in all regions
+k_region$K_locus[k_region$regions==4]
+length(k_region$K_locus[k_region$regions==4])
+
+# coverage of these
+data_NNS_sites10 %>% filter(K_locus %in% k_region$K_locus[k_region$regions==4]) %>% nrow()
+
+
+
+
+# KL/O/ST per country
+clones_per_country <- data_NNS_sites10 %>% mutate(clone=paste(ST, K_locus, O_genotype)) %>% group_by(Country) %>% summarise(clones=length(unique(clone)), n=n())
+
+clonefreq_per_country <- data_NNS_sites10 %>% mutate(clone=paste(ST, K_locus, O_genotype)) %>% group_by(Country, clone) %>% count() %>% left_join(countries, by="Country") %>% mutate(clone_freq=n.x/n.y) %>% arrange(-clone_freq)
+
+data_NNS_sites10 %>% filter(Country=="Ethiopia" & ST=="ST35") %>% group_by(Site, Year, K_locus, O_genotype) %>% count()
+data_NNS_sites10 %>% filter(Country=="Ethiopia" & ST=="ST37") %>% group_by(Site, Year, K_locus, O_genotype) %>% count()
+
+data_NNS_sites10 %>% filter(Country=="Zambia" & ST=="ST307") %>% group_by(Site, Year, K_locus, O_genotype) %>% count()
+
+clonefreq_per_country %>% filter(clone=="ST1741 KL104 O1.v2")
+```
+
+# numbers for text - O types
+``` {r}
+# total O
+data_NNS_sites10 %>% filter(O_locus_confidence !="Untypeable") %>% group_by(O_genotype) %>% count() %>% nrow()
+
+# common O (≥5% each)
+data_NNS_sites10 %>% filter(O_locus_confidence !="Untypeable") %>% group_by(O_genotype) %>% count() %>% mutate(p=n/nrow(data_NNS_sites10)) %>% filter(p>=0.05)
+
+# fraction accounted for by common K
+data_NNS_sites10 %>% filter(O_locus_confidence !="Untypeable") %>% group_by(O_genotype) %>% count() %>% mutate(p=n/nrow(data_NNS_sites10)) %>% filter(p>=0.05) %>% pull(p) %>% sum()
+
+# fraction accounted for by top 5/10/15/20
+cumulative_proportion_O <- data_NNS_sites10 %>% filter(O_locus_confidence !="Untypeable") %>% group_by(O_genotype) %>% count() %>% mutate(p=n/nrow(data_NNS_sites10)) %>% arrange(-p) %>% pull(p) %>% cumsum()
+
+data_NNS_sites10 %>% filter(O_locus_confidence !="Untypeable") %>% group_by(O_genotype) %>% count() %>% mutate(p=n/nrow(data_NNS_sites10)) %>% arrange(-p) %>% bind_cols(cummulative=cumulative_proportion_O)
+
+```
+
