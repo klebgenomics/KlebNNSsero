@@ -1,5 +1,5 @@
 ---
-title: "AntigenPaper_Prevalence"
+title: "Data Analysis using Bayesian Modelled Estimates"
 author: "Kat Holt"
 date: "2025-03-04"
 output: html_document
@@ -17,46 +17,26 @@ library(reshape2)
 library(RColorBrewer)
 library(ggridges)
 library(logistf)
-#library(meta)
-#library(ggpol) # used by pyramid plot function
 ```
 
 # Setup
 
 ## load sero-epi functions
 ``` {r}
-
 source("seroepi_functions.R")
 source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/kleborate_functions.R")
-source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/plotting_functions.R")
-
-#source("~/Documents/GitHub/KleborateR/kleborate_functions.R")
-#source("~/Documents/GitHub/KleborateR/plotting_functions.R")
-
 ```
 
 ## set colour palettes
 ``` {r}
 # source: https://davidmathlogic.com/colorblind/#%23D81B60-%231E88E5-%23FFC107-%23004D40
-  
 region_cols <- c(`Southern Asia` ="#D81B60", `Western Africa`="#1E88E5", `Eastern Africa`="#FFC107", `Southern Africa`="#81B1A9", Global="black")
-
 group_cols <- c(All="black", Fatal ="#D81B60", ESBL="#1E88E5", CP="#FFC107")
 ```
 
-## load underlying sample data
+## load data on included samples - Table S3
 ``` {r}
-
-#data_NNS_sites10 <- read_csv("inputs_paper/Neonatal_shareable_20241002_28_filterN10.csv")
-data_NNS_sites10 <- read_tsv("tables/TableS3_IsolatesIncluded_NEEDSACCESSIONS.tsv")
-
-dim(data_NNS_sites10)
-
-table(data_NNS_sites10$Study)
-
-dir.create("tables")
-dir.create("figures")
-
+data_NNS_sites10 <- read_tsv("tables/TableS3.tsv")
 ```
 
 
@@ -66,19 +46,15 @@ dir.create("figures")
 ``` {r}
 
 # read adjusted Bayesian estimates for K
-kbayes <- parseModelledEstimates(global_post="outputs_paper/K_Full_min10_adj_28_posterior_global.csv.gz", region_post="outputs_paper/K_Full_min10_adj_28_posterior_subgroup.csv.gz")
+kbayes <- parseModelledEstimates(global_post="outputs_core/K_Full_min10_adj_28_posterior_global.csv.gz", region_post="outputs_core/K_Full_min10_adj_28_posterior_subgroup.csv.gz")
 
 # read raw Bayesian estimates for K
-kbayes_raw <- parseModelledEstimates(global_post="outputs_paper/K_Full_min10_raw_28_posterior_global.csv.gz", region_post="outputs_paper/K_Full_min10_raw_28_posterior_subgroup.csv.gz")
+kbayes_raw <- parseModelledEstimates(global_post="outputs_core/K_Full_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/K_Full_min10_raw_28_posterior_subgroup.csv.gz")
 
 ```
 
-## global and regional prevalence
+## global and regional prevalence - top20 K
 ``` {r}
-k_prev_global_bar <- locus_barplot(estimates=kbayes$global_est %>% filter(grepl("KL",locus)), 
-                                   ranks=kbayes$locus_rank, 
-                                   lines_every=10, error_bars=T, median=F)
-
 k_prev_global_dist <- locus_ridgesplot(posterior=kbayes$global_post,
                                    ranks=kbayes$locus_rank, 
                                    lines_every=10, 
@@ -87,13 +63,10 @@ k_prev_global_dist <- locus_ridgesplot(posterior=kbayes$global_post,
 
 k_prev_region_heatmap <- region_heatmap(kbayes$region_est, kbayes$global_est, 
                                    ranks=kbayes$locus_rank, median=F, title="b) Point estimates")
-
-k_prev_global_bar + k_prev_region_heatmap
-
 ```
 
-``` {r}
 # fig 2
+``` {r}
 k_prev_global_dist + k_prev_region_heatmap
 
 ggsave("figures/Fig2_K_global_regional_Kadj.pdf", width=8, height=6)
@@ -102,7 +75,7 @@ ggsave("figures/Fig2_K_global_regional_Kadj.png", width=8, height=6)
 
 
 
-# global modelled prevalence
+# global and regional prevalence - all K
 ``` {r}
 k_prev_global_dist_all <- locus_ridgesplot(posterior=kbayes$global_post,
                                    ranks=kbayes$locus_rank,
@@ -113,14 +86,13 @@ k_prev_global_dist_all <- locus_ridgesplot(posterior=kbayes$global_post,
 k_prev_region_heatmap_all <- region_heatmap(kbayes$region_est, kbayes$global_est,
                                    ranks=kbayes$locus_rank,
                                    maxRank = 90, axis_font_size=8, median=F, title="b) Point estimates")
-
 ```
 
-
+# Figure S2 - modelled estimates for all K loci
 ``` {r}
 k_prev_global_dist_all + k_prev_region_heatmap_all
-ggsave("figures/FigS4_K_global_regional_Kadj.pdf", width=8, height=10)
-ggsave("figures/FigS4_K_global_regional_Kadj.png", width=8, height=10)
+ggsave("figures/FigS2_K_global_regional_Kadj.pdf", width=8, height=10)
+ggsave("figures/FigS2_K_global_regional_Kadj.png", width=8, height=10)
 ```
 
 
@@ -128,17 +100,13 @@ ggsave("figures/FigS4_K_global_regional_Kadj.png", width=8, height=10)
 
 ## compare global prevalence distributions using cluster-adjusted and raw counts
 ``` {r}
-# plot raw vs adjusted distributions
-k_prev_global_dist_raw <- locus_ridgesplot(posterior=kbayes_raw$global_post, ranks=kbayes_raw$locus_rank, lines_every=10, xlim=c(0,15), xbreaks=seq(0,15,1), col="skyblue", title="b) Global prevalence (raw)")
-
-k_prev_global_dist + k_prev_global_dist_raw
-
-# or plot together overlaid - for fig S14b
+# plot raw vs adjusted distributions, overlaid - for appendix s2.4b
 k_dist_raw_adj <- comparative_locus_ridgesplot(posterior1=kbayes$global_post,
                              posterior2=kbayes_raw$global_post,
                              ranks=kbayes$locus_rank, 
                              lines_every=10, xlim=c(0,20), xbreaks=seq(0,20,1))
 ```
+
 
 # logistic regression of K vs year + region
 ``` {r}
@@ -168,27 +136,8 @@ region_2pc <- kbayes$region_est %>% select(locus, subgroup, mean) %>%
   filter(d1>p | d2>p | d3>p | d4>p | d5>p | d6>p)
 ```
 
-# overlapping regional densities
-``` {r}
-kbayes$region_post %>% 
-    left_join(kbayes$locus_rank) %>%
-    filter(rank<=30) %>%
-    mutate(Region=fct_relevel(subgroup,c("Western Africa", "Southern Africa", "Eastern Africa", "Southern Asia"))) %>%
-    ggplot() +
-    geom_hline(yintercept=11) +
-    geom_hline(yintercept=21) +
-    geom_density_ridges(aes(x=prob*100, y=locus, fill=Region), 
-                        scale=1, rel_min_height = 0.01, alpha=0.5, col=NA) + 
-    scale_y_discrete(limits=rev(kbayes$locus_rank$locus[1:30])) + 
-  scale_x_continuous(limits=c(0,30)) +
-  labs(x="Prevalence per region", y="", fill="Region") + 
-  annotate(y=region_2pc$locus, label="*", x=29, geom="text") + 
-  annotate(y=logistic_sig$locus, label="^", x=30, geom="text") +
-  scale_fill_manual(values=region_cols) +
-  theme_bw()
-```
 
-# overlapping regional densities - log2 scale
+# Fig S3 - overlapping regional densities - log2 scale
 ``` {r}
 kbayes$region_post %>% 
     left_join(kbayes$locus_rank) %>%
@@ -209,8 +158,8 @@ kbayes$region_post %>%
 ```
 
 ``` {r}
-ggsave("figures/FigS5_RegionalKBayesDist.pdf", width=6, height=9)
-ggsave("figures/FigS5_RegionalKBayesDist.png", width=6, height=9)
+ggsave("figures/FigS3_RegionalKBayesDist.pdf", width=6, height=9)
+ggsave("figures/FigS3_RegionalKBayesDist.png", width=6, height=9)
 ```
 
 
@@ -220,19 +169,15 @@ ggsave("figures/FigS5_RegionalKBayesDist.png", width=6, height=9)
 ``` {r}
 
 # read adjusted Bayesian estimates for O
-obayes <- parseModelledEstimates(global_post ="outputs_paper/O_Full_min10_adj_28_posterior_global.csv.gz", region_post = "outputs_paper/O_Full_min10_adj_28_posterior_subgroup.csv.gz", fixOnames = T)
+obayes <- parseModelledEstimates(global_post ="outputs_core/O_Full_min10_adj_28_posterior_global.csv.gz", region_post = "outputs_core/O_Full_min10_adj_28_posterior_subgroup.csv.gz", fixOnames = T)
 
 # read raw Bayesian estimates for O
-obayes_raw <- parseModelledEstimates(global_post ="outputs_paper/O_Full_min10_raw_28_posterior_global.csv.gz", region_post = "outputs_paper/O_Full_min10_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
+obayes_raw <- parseModelledEstimates(global_post ="outputs_core/O_Full_min10_raw_28_posterior_global.csv.gz", region_post = "outputs_core/O_Full_min10_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
 
 ```
 
 ## global and regional prevalence
 ``` {r}
-o_prev_global_bar <- locus_barplot(estimates=obayes$global_est, 
-                                   ranks=obayes$locus_rank, 
-                                   lines_every=5, maxRank=15, error_bars=T, median=F)
-
 o_prev_global_dist <- locus_ridgesplot(posterior=obayes$global_post, 
                                    ranks=obayes$locus_rank, 
                                    lines_every=5, maxRank=15, 
@@ -240,32 +185,17 @@ o_prev_global_dist <- locus_ridgesplot(posterior=obayes$global_post,
 
 o_prev_region_heatmap <- region_heatmap(estimates=obayes$region_est, global=obayes$global_est,
                                    ranks=obayes$locus_rank, maxRank=15, median=F, title="b) Point estimates")
-
-o_prev_global_bar + o_prev_region_heatmap
-
-
 ```
 
 ``` {r}
 # fig 4a
 o_prev_global_dist + o_prev_region_heatmap
-
 ```
 
 
 ## compare global prevalence distributions using cluster-adjusted and raw counts
 ``` {r}
-# plot raw vs adjusted distributions
-o_prev_global_dist_raw <- locus_ridgesplot(posterior=obayes_raw$global_post, 
-                                   ranks=obayes$locus_rank, 
-                                   maxRank=15, lines_every=5, 
-                                   xlim=c(0,30), xbreaks=seq(0,30,5), 
-                                   col="skyblue", 
-                                   title="b) Global prevalence (raw)")
-
-o_prev_global_dist + o_prev_global_dist_raw
-
-# or plot together overlaid - for fig S14b
+# plot raw vs adjusted distributions, overlaid - for appendix s2.4b
 o_dist_raw_adj <- comparative_locus_ridgesplot(posterior1=obayes$global_post,
                              posterior2=obayes_raw$global_post,
                              ranks=obayes$locus_rank, maxRank=10,
@@ -300,27 +230,7 @@ region_5pc_o <- obayes$region_est %>% select(locus, subgroup, mean) %>%
   filter(d1>p | d2>p | d3>p | d4>p | d5>p | d6>p)
 ```
 
-# overlapping regional densities
-``` {r}
-obayes$region_post %>% 
-    left_join(obayes$locus_rank) %>%
-    filter(rank<=10) %>%
-    mutate(Region=fct_relevel(subgroup,c("Western Africa", "Southern Africa", "Eastern Africa", "Southern Asia"))) %>%
-    ggplot() +
-    geom_hline(yintercept=6) +
-    geom_hline(yintercept=11) +
-    geom_density_ridges(aes(x=prob*100, y=locus, fill=Region), 
-                        scale=1, rel_min_height = 0.01, alpha=0.5, col=NA) + 
-    scale_y_discrete(limits=rev(obayes$locus_rank$locus[1:10])) + 
-  scale_x_continuous(limits=c(0,50)) +
-  labs(x="Prevalence per region", y="", fill="Region") + 
-  annotate(y=region_5pc_o$locus, label="*", x=49, geom="text") + 
-  annotate(y=logistic_sig_o$locus, label="^", x=50, geom="text") +
-  scale_fill_manual(values=region_cols) +
-  theme_bw()
-```
-
-# overlapping regional densities - log2 scale
+# Fig S5 - overlapping regional densities for O types - log2 scale
 ``` {r}
 obayes$region_post %>% 
     left_join(obayes$locus_rank) %>%
@@ -341,15 +251,15 @@ obayes$region_post %>%
 ```
 
 ``` {r}
-ggsave("figures/FigS8_RegionalOBayesDist.pdf", width=6, height=5)
-ggsave("figures/FigS8_RegionalOBayesDist.png", width=6, height=5)
+ggsave("figures/FigS5_RegionalOBayesDist.pdf", width=6, height=5)
+ggsave("figures/FigS5_RegionalOBayesDist.png", width=6, height=5)
 ```
 
 
 
 
 
-# Fig S6 = crude annual K rate per region
+# Appendix Fig S1.3 = crude annual K rate per region
 ``` {r}
 
 K_crude_perRegion_perYear <- data_NNS_sites10 %>%
@@ -373,12 +283,12 @@ K_crude_perRegion_perYear %>%
 ```
 
 ``` {r}
-ggsave("figures/FigS6_crudeRegionAnnualRateK.pdf", width=7, height=9)
-ggsave("figures/FigS6_crudeRegionAnnualRateK.png", width=7, height=9)
+ggsave("figures/AppendixFigS1.3_crudeRegionAnnualRateK.pdf", width=7, height=9)
+ggsave("figures/AppendixFigS1.3_crudeRegionAnnualRateK.png", width=7, height=9)
 ```
 
 
-# Fig S9 - simple est per year per O/region
+# Appendix Fig S1.4 - simple est per year per O/region
 ``` {r}
   
 O_crude_perRegion_perYear <- data_NNS_sites10 %>%
@@ -402,15 +312,15 @@ O_crude_perRegion_perYear %>%
 ```
 
 ``` {r}
-ggsave("figures/FigS9_crudeRegionAnnualRateO.pdf", width=6, height=8)
-ggsave("figures/FigS9_crudeRegionAnnualRateO.png", width=6, height=8)
+ggsave("figures/AppendixFigS1.4_crudeRegionAnnualRateO.pdf", width=6, height=8)
+ggsave("figures/AppendixFigS1.4_crudeRegionAnnualRateO.png", width=6, height=8)
 ```
 
 
-# Figure S10 - ST vs KL coloured by region, for top 4 O types
+# Appendix Figure S1.5 - ST vs KL coloured by region, for top 4 O types
 ``` {r}
 o_region_ST <- data_NNS_sites10 %>%
-  filter(O_genotype %in% c("O2afg", "O4", "O2a", "OL13")) %>%
+  filter(O_genotype %in% c("O2afg", "O4", "O2a", "O13")) %>%
   mutate(Region=fct_relevel(Region, c("Western Africa", "Southern Africa", "Eastern Africa", "Southern Asia"))) %>%
   ggplot(aes(col=Region, x=K_locus, y=ST)) + 
   geom_jitter(alpha=0.5) +
@@ -424,8 +334,8 @@ o_region_ST <- data_NNS_sites10 %>%
 ``` {r}
 o_region_ST
 
-ggsave("figures/FigS10_O_STvsKbyRegion.pdf", width=7, height=9)
-ggsave("figures/FigS10_O_STvsKbyRegion.png", width=7, height=9)
+ggsave("figures/AppendixFigS1.5_O_STvsKbyRegion.pdf", width=7, height=9)
+ggsave("figures/AppendixFigS1.5_O_STvsKbyRegion.png", width=7, height=9)
 ```
 
 
@@ -455,42 +365,13 @@ bayes_global_O_raw_vs_adj <- obayes_global %>%
   geom_text(data=obayes_global[obayes_global$locus %in% obayes$locus_rank$locus[1:9],], aes(x=mean.raw*100, y=mean.adj*100, label=locus), hjust=1, nudge_x=-0.2, size=2.5)
 ```
 
-## Figure S14 - cluster vs raw, global K
+## Appendix Figure S2.4 - cluster vs raw, global K
 ``` {r}
-( (bayes_global_K_raw_vs_adj + ggtitle("a) K locus (mean estimate)") ) + (bayes_global_O_raw_vs_adj  + ggtitle("b) O type (mean estimate)")) + plot_layout(axes="collect") ) / (k_dist_raw_adj + ggtitle ("c) K locus (posterior distribution)") + o_dist_raw_adj + ggtitle ("d) O type (posterior distribution)") + plot_layout(guides="collect")) + plot_layout(heights=c(1,2)) & theme(legend.position='bottom')
+( (bayes_global_K_raw_vs_adj + ggtitle("a) K locus (mean estimate)") ) + (bayes_global_O_raw_vs_adj  + ggtitle("b) O type (mean estimate)")) + patchwork::plot_layout(axes="collect") ) / (k_dist_raw_adj + ggtitle ("c) K locus (posterior distribution)") + o_dist_raw_adj + ggtitle ("d) O type (posterior distribution)") + patchwork::plot_layout(guides="collect")) + patchwork::plot_layout(heights=c(1,2)) & theme(legend.position='bottom')
 
 
-ggsave("figures/FigS14_clusterVsRaw.pdf", width=8, height=11)
-ggsave("figures/FigS14_clusterVsRaw.png", width=8, height=11)
-```
-
-# Effect of cluster adjustment on crude proportion
-``` {r}
-K_crude_global <- data_NNS_sites10 %>%
- group_by(K_locus) %>% summarise(raw_count=n(), raw_prop=raw_count/nrow(data_NNS_sites10))
-
-K_crude_global <- data_NNS_sites10 %>% select(K_locus, Cluster) %>% distinct() %>%
- group_by(K_locus) %>% 
-  summarise(adj_count=n(), adj_prop=adj_count/length(unique(data_NNS_sites10$Cluster))) %>%
-  right_join(K_crude_global)
-
-O_crude_global <- data_NNS_sites10 %>%
- group_by(O_genotype) %>% summarise(raw_count=n(), raw_prop=raw_count/nrow(data_NNS_sites10))
-
-O_crude_global <- data_NNS_sites10 %>% select(O_genotype, Cluster) %>% distinct() %>%
- group_by(O_genotype) %>% 
-  summarise(adj_count=n(), adj_prop=adj_count/length(unique(data_NNS_sites10$Cluster))) %>%
-  right_join(O_crude_global)
-
-```
-
-``` {r}
-K_crude_global %>% ggplot(aes(y=adj_prop*100, x=raw_prop*100)) + 
-  geom_point() + 
-  theme_bw() + 
-  labs(x="Crude estimate (%), raw", y="Crude estimate (%), cluster-adjusted") +
-  geom_abline(slope=1, intercept=0) + 
-  geom_text(data=K_crude_global[K_crude_global$K_locus %in% kbayes$locus_rank$locus[1:5],], aes(x=raw_prop*100, y=adj_prop*100, label=K_locus), hjust=1, nudge_x=-0.2, size=2.5)
+ggsave("figures/AppendixFigS2.4_clusterVsRaw.pdf", width=8, height=11)
+ggsave("figures/AppendixFigS2.4_clusterVsRaw.png", width=8, height=11)
 ```
 
 
@@ -582,12 +463,12 @@ O_crude_raw_adj_scatter_O4 <- O_crude_perSite %>%
 
 ```
 
-# Fig S13 - Effect of cluster adjustment on crude proportion
+# Appendix Fig S2.3 - Effect of cluster adjustment on crude proportion
 ``` {r}
 (K_crude_raw_adj_scatter_KL102 + ggtitle("a) KL102, per-site") + K_crude_raw_adj_scatter_KL2 + ggtitle("b) KL2, per-site")) / (K_crude_raw_adj_scatter_KL25 + ggtitle("c) KL25, per-site") + K_crude_raw_adj_scatter_KL62 + ggtitle("d) KL62, per-site")) / (O_crude_raw_adj_scatter_O1v1 + ggtitle("e) O1v1, per-site") + O_crude_raw_adj_scatter_O1v2 + ggtitle("f) O1v2, per-site")) / (O_crude_raw_adj_scatter_O2afg + ggtitle("g) O2afg, per-site") + O_crude_raw_adj_scatter_O4 + ggtitle("h) O4, per-site"))
 
-ggsave("figures/FigS13_EffectClusteringCrude.pdf", width=8, height=10)
-ggsave("figures/FigS13_EffectClusteringCrude.png", width=8, height=10)
+ggsave("figures/AppendixFigS2.3_EffectClusteringCrude.pdf", width=8, height=10)
+ggsave("figures/AppendixFigS2.3_EffectClusteringCrude.png", width=8, height=10)
 ```
 
 
@@ -658,100 +539,35 @@ data_NNS_sites10 %>% filter(O_genotype=="O5" & Region=="Southern Africa") %>% gr
 
 # Global and regional coverage - top20 global - Fig3bi
 ``` {r}
-
 kbayes_raw_coverage <- getCumulativeCoverageGlobalRegional(kbayes_raw, kbayes$locus_rank) %>%
   mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
 
 coverage_globalTop20_globalRegional <- plotCoverage(kbayes_raw_coverage, kbayes$locus_rank, maxRank=20, cols=region_cols)
 
 coverage_globalTop20_globalRegional
-
 ```
 
 
 ## fatal - read posterior estimates for adjusted counts (main) and raw counts (for comparison)
 ``` {r}
-
 # read raw Bayesian estimates for K - using fatal samples from sites with at least 10 fatal
-kbayes_fatal_raw_min10perSite <- parseModelledEstimates(global_post="outputs_paper/K_Fatal_min10_raw_28_posterior_global.csv.gz", region_post="outputs_paper/K_Fatal_min10_raw_28_posterior_subgroup.csv.gz")
-
-```
-
-``` {r}
+kbayes_fatal_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/K_Fatal_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/K_Fatal_min10_raw_28_posterior_subgroup.csv.gz")
 
 kbayes_fatal_raw_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_rank, kbayes_fatal_raw_min10perSite$global_post) %>% mutate(type="min10")
-
 ```
 
 ## ESBL - read posterior estimates for adjusted counts (main) and raw counts (for comparison)
 ``` {r}
-
-# read adjusted Bayesian estimates for K - using all ESBL samples
-kbayes_esbl_raw <- parseModelledEstimates(global_post="outputs_paper/K_ESBL_ALL_raw_28_posterior_global.csv.gz", region_post="outputs_paper/K_ESBL_ALL_raw_28_posterior_subgroup.csv.gz")
-
-# read raw Bayesian estimates for K - using ESBL samples from sites with at least 10 ESBL
-kbayes_esbl_raw_min10perSite <- parseModelledEstimates(global_post="outputs_paper/K_ESBL_min10_raw_28_posterior_global.csv.gz", region_post="outputs_paper/K_ESBL_min10_raw_28_posterior_subgroup.csv.gz")
-
-```
-
-``` {r}
-
-kbayes_esbl_raw_coverage <- getCumulativeCoverage(kbayes$locus_rank, kbayes_esbl_raw$global_post) %>% mutate(type="all")
+kbayes_esbl_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/K_ESBL_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/K_ESBL_min10_raw_28_posterior_subgroup.csv.gz")
 
 kbayes_esbl_raw_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_rank, kbayes_esbl_raw_min10perSite$global_post) %>% mutate(type="min10")
-
-# compare results using all data vs only sites with at least 10 fatal cases - very little difference
-kbayes_esbl_raw_coverage %>% 
-  bind_rows(kbayes_esbl_raw_min10perSite_coverage) %>%
-  filter(rank <=20) %>%
-  ggplot(aes(x=rank, y=mean*100, group=type)) +
-    geom_hline(yintercept=70, linetype=2) + geom_vline(xintercept=c(5,10,15,20), col="grey") +
-    geom_line(aes(col=type), lwd=1) + 
-    geom_ribbon(aes(ymin=lower*100, ymax=upper*100, fill=type), alpha=0.1, linetype=0) +
-    theme_bw() +
-    ylim(0,100) + 
-    labs(x=NULL, y="Cumulative coverage (%)", fill="", colour="", linetype="") +
-    theme(axis.text.x = element_text(angle=90), panel.grid.minor.x = element_blank()) +
-    scale_x_continuous(breaks=seq(1,20), labels=kbayes$locus_rank$locus[1:20]) 
-
-
-(kbayes_esbl_raw_coverage$mean - kbayes_esbl_raw_min10perSite_coverage$mean)*100
 ```
-
 
 ## CP - read posterior estimates for adjusted counts (main) and raw counts (for comparison)
 ``` {r}
-
-# read adjusted Bayesian estimates for K - using all CP samples
-kbayes_cp_raw <- parseModelledEstimates(global_post="outputs_paper/K_Carba_ALL_raw_28_posterior_global.csv.gz", region_post="outputs_paper/K_Carba_ALL_raw_28_posterior_subgroup.csv.gz")
-
-# read raw Bayesian estimates for K - using CP samples from sites with at least 10 CP
-kbayes_cp_raw_min10perSite <- parseModelledEstimates(global_post="outputs_paper/K_Carba_min10_raw_28_posterior_global.csv.gz", region_post="outputs_paper/K_Carba_min10_raw_28_posterior_subgroup.csv.gz")
-
-```
-
-``` {r}
-
-kbayes_cp_raw_coverage <- getCumulativeCoverage(kbayes$locus_rank, kbayes_cp_raw$global_post) %>% mutate(type="all")
+kbayes_cp_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/K_Carba_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/K_Carba_min10_raw_28_posterior_subgroup.csv.gz")
 
 kbayes_cp_raw_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_rank, kbayes_cp_raw_min10perSite$global_post) %>% mutate(type="min10")
-
-# compare results using all data vs only sites with at least 10 fatal cases - very little difference
-kbayes_cp_raw_coverage %>% 
-  bind_rows(kbayes_cp_raw_min10perSite_coverage) %>%
-  filter(rank <=20) %>%
-  ggplot(aes(x=rank, y=mean*100, group=type)) +
-    geom_hline(yintercept=70, linetype=2) + geom_vline(xintercept=c(5,10,15,20), col="grey") +
-    geom_line(aes(col=type), lwd=1) + 
-    geom_ribbon(aes(ymin=lower*100, ymax=upper*100, fill=type), alpha=0.1, linetype=0) +
-    theme_bw() +
-    ylim(0,100) + 
-    labs(x=NULL, y="Cumulative coverage (%)", fill="", colour="", linetype="") +
-    theme(axis.text.x = element_text(angle=90), panel.grid.minor.x = element_blank()) +
-    scale_x_continuous(breaks=seq(1,20), labels=kbayes$locus_rank$locus[1:20]) 
-
-
-(kbayes_cp_raw_coverage$mean - kbayes_cp_raw_min10perSite_coverage$mean)*100
 ```
 
 # combine coverage estimates for subgroups (fatal, ESBL, CP) - Fig3ai
@@ -763,14 +579,12 @@ kbayes_raw_coverage_subgroups <- kbayes_esbl_raw_min10perSite_coverage %>% mutat
   bind_rows(kbayes_raw_coverage %>% filter(subgroup=="Global") %>% mutate(subgroup="All") ) %>%
   mutate(subgroup=fct_relevel(subgroup,c("All", "Fatal", "ESBL", "CP")))
 
-
 coverage_globalTop20_subgroups <- plotCoverage(kbayes_raw_coverage_subgroups, kbayes$locus_rank, maxRank=20, cols=group_cols)
 
 coverage_globalTop20_subgroups
-
 ```
 
-# try to improve by taking top 8 per region - Fig3aii and Fig3bii
+# take top 8 per region - Fig3aii and Fig3bii
 ``` {r}
 
 ## extract cluster-adjusted coverage per region
@@ -816,12 +630,10 @@ kbayes_raw_coverage_subgroups_top8perRegion <- kbayes_esbl_raw_min10perSite_cove
 coverage_subgroups_top8perRegion <- plotCoverage(kbayes_raw_coverage_subgroups_top8perRegion, k_rank_region8, maxRank=nrow(k_rank_region8), cols=group_cols)
 
 coverage_subgroups_top8perRegion
-
-
 ```
 
 ``` {r}
-(coverage_globalTop20_subgroups + ggtitle("a) Global coverage, by case type", subtitle="KL set 1: global top-20") + coverage_subgroups_top8perRegion + ggtitle("", subtitle="KL set 2: top-8 per region") + plot_layout(guides="collect", axes="collect")) / (coverage_globalTop20_globalRegional + ggtitle("b) Per-region coverage", subtitle="KL set 1: global top-20") + coverage_global_top8perRegion + ggtitle("", subtitle="KL set 2: top-8 per region") + plot_layout(guides="collect", axes="collect"))
+(coverage_globalTop20_subgroups + ggtitle("a) Global coverage, by case type", subtitle="KL set 1: global top-20") + coverage_subgroups_top8perRegion + ggtitle("", subtitle="KL set 2: top-8 per region") + patchwork::plot_layout(guides="collect", axes="collect")) / (coverage_globalTop20_globalRegional + ggtitle("b) Per-region coverage", subtitle="KL set 1: global top-20") + coverage_global_top8perRegion + ggtitle("", subtitle="KL set 2: top-8 per region") + patchwork::plot_layout(guides="collect", axes="collect"))
 
 ggsave("figures/Fig3_Kcoverage_raw.pdf", width=8, height=8)
 ggsave("figures/Fig3_Kcoverage_raw.png", width=8, height=8)
@@ -852,6 +664,9 @@ table2 <- kbayes_raw_coverage %>% mutate(cases="All") %>%
 
 # add totals per subgroup
 ``` {r}
+fatal_counts <- data_NNS_sites10 %>% filter(Mortality==1) %>% group_by(Region) %>% count()
+fatal_counts <- fatal_counts %>% bind_rows(list(Region="Global", n=sum(fatal_counts$n)))
+
 esbl_counts <- data_NNS_sites10 %>% filter(resistance_score>=1) %>% group_by(Region) %>% count()
 esbl_counts <- esbl_counts %>% bind_rows(list(Region="Global", n=sum(esbl_counts$n)))
 
@@ -860,19 +675,6 @@ cp_counts <- cp_counts %>% bind_rows(list(Region="Global", n=sum(cp_counts$n)))
 
 total_counts <- data_NNS_sites10 %>% group_by(Region) %>% count()
 total_counts <- total_counts %>% bind_rows(list(Region="Global", n=sum(cp_counts$n)))
-
-```
-
-``` {r}
-## merge mortality info
-mortality <- read_csv("mortality_all_20250313.csv")
-
-data_NNS_sites10 <- data_NNS_sites10 %>% left_join(mortality, multiple="last")
-
-data_NNS_sites10 %>% group_by(Study, Mortality) %>% count()
-
-fatal_counts <- data_NNS_sites10 %>% filter(Mortality==1) %>% group_by(Region) %>% count()
-fatal_counts <- fatal_counts %>% bind_rows(list(Region="Global", n=sum(fatal_counts$n)))
 ```
 
 ``` {r}
@@ -899,7 +701,6 @@ write_tsv(table2, file="tables/Table2_coverage.tsv")
 ```
 
 # Table S4 - K set2 coverage stats for all/ESBL/CP/fatal, for global and regional
-
 ``` {r}
 kbayes_fatal_raw_min10perSite_coverageRegional_top8perRegion <- getCumulativeCoverageGlobalRegional(ranks=k_rank_region8, bayes=kbayes_fatal_raw_min10perSite, maxRank=20)
 
@@ -943,7 +744,7 @@ tableS4 <- tableS4 %>%
 write_tsv(tableS4, file="tables/TableS4_coverageSet2.tsv")
 ```
 
-# Fig S7 - coverage for region-focused K sets
+# Fig S4 - coverage for region-focused K sets
 ``` {r}
 # ranked by Southern Africa
 kbayes_raw_coverage_top20SA <- getCumulativeCoverageGlobalRegional(kbayes_raw, K_rank_SA %>% select(locus, rank), maxRank=20) %>%
@@ -973,10 +774,10 @@ kbayes_raw_coverage_globalRegional_top20SAs <- plotCoverage(kbayes_raw_coverage_
 
 ``` {r}
 
-(kbayes_raw_coverage_globalRegional_top20SA + ggtitle("Top-20 K loci in S. Africa") + kbayes_raw_coverage_globalRegional_top20EA + ggtitle("Top-20 K loci in E. Africa")) / (kbayes_raw_coverage_globalRegional_top20WA + ggtitle("Top-20 K loci in W. Africa") + kbayes_raw_coverage_globalRegional_top20SAs + ggtitle("Top-20 K loci in S. Asia")) + plot_layout(guides="collect")
+(kbayes_raw_coverage_globalRegional_top20SA + ggtitle("Top-20 K loci in S. Africa") + kbayes_raw_coverage_globalRegional_top20EA + ggtitle("Top-20 K loci in E. Africa")) / (kbayes_raw_coverage_globalRegional_top20WA + ggtitle("Top-20 K loci in W. Africa") + kbayes_raw_coverage_globalRegional_top20SAs + ggtitle("Top-20 K loci in S. Asia")) + patchwork::plot_layout(guides="collect")
 
-ggsave("figures/FigS7_KcoverageRaw_top20PerRegion.pdf", width=8, height=8)
-ggsave("figures/FigS7_KcoverageRaw_top20PerRegion.png", width=8, height=8)
+ggsave("figures/FigS4_KcoverageRaw_top20PerRegion.pdf", width=8, height=8)
+ggsave("figures/FigS4_KcoverageRaw_top20PerRegion.png", width=8, height=8)
 ```
 
 # numbers for text - K coverage
@@ -1025,87 +826,24 @@ ocoverage_globalTop10_globalRegional
 
 ## O fatal - read posterior estimates for adjusted counts (main) and raw counts (for comparison)
 ``` {r}
-
-# read raw Bayesian estimates for O - using fatal samples from sites with at least 10 fatal
-obayes_fatal_raw_min10perSite <- parseModelledEstimates(global_post="outputs_paper/O_Fatal_min10_raw_28_posterior_global.csv.gz", region_post="outputs_paper/O_Fatal_min10_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
-
-```
-
-``` {r}
+obayes_fatal_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/O_Fatal_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/O_Fatal_min10_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
 
 obayes_fatal_raw_min10perSite_coverage <- getCumulativeCoverage(obayes$locus_rank, obayes_fatal_raw_min10perSite$global_post) %>% mutate(type="min10")
-
 ```
 
 ## ESBL - read posterior estimates for adjusted counts (main) and raw counts (for comparison)
 ``` {r}
-
-# read adjusted Bayesian estimates for O - using all ESBL samples
-obayes_esbl_raw <- parseModelledEstimates(global_post="outputs_paper/O_ESBL_ALL_raw_28_posterior_global.csv.gz", region_post="outputs_paper/O_ESBL_ALL_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
-
-# read raw Bayesian estimates for O - using ESBL samples from sites with at least 10 ESBL
-obayes_esbl_raw_min10perSite <- parseModelledEstimates(global_post="outputs_paper/O_ESBL_min10_raw_28_posterior_global.csv.gz", region_post="outputs_paper/O_ESBL_min10_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
-
-```
-
-``` {r}
-
-obayes_esbl_raw_coverage <- getCumulativeCoverage(obayes$locus_rank, obayes_esbl_raw$global_post) %>% mutate(type="all")
+obayes_esbl_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/O_ESBL_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/O_ESBL_min10_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
 
 obayes_esbl_raw_min10perSite_coverage <- getCumulativeCoverage(obayes$locus_rank, obayes_esbl_raw_min10perSite$global_post) %>% mutate(type="min10")
-
-# compare results using all data vs only sites with at least 10 ESBL cases - very little difference
-obayes_esbl_raw_coverage %>% 
-  bind_rows(obayes_esbl_raw_min10perSite_coverage) %>%
-  filter(rank <=20) %>%
-  ggplot(aes(x=rank, y=mean*100, group=type)) +
-    geom_hline(yintercept=70, linetype=2) + geom_vline(xintercept=c(5,10,15,20), col="grey") +
-    geom_line(aes(col=type), lwd=1) + 
-    geom_ribbon(aes(ymin=lower*100, ymax=upper*100, fill=type), alpha=0.1, linetype=0) +
-    theme_bw() +
-    ylim(0,100) + 
-    labs(x=NULL, y="Cumulative coverage (%)", fill="", colour="", linetype="") +
-    theme(axis.text.x = element_text(angle=90), panel.grid.minor.x = element_blank()) +
-    scale_x_continuous(breaks=seq(1,20), labels=obayes$locus_rank$locus[1:20]) 
-
-
-(obayes_esbl_raw_coverage$mean - obayes_esbl_raw_min10perSite_coverage$mean)*100
 ```
 
 
 ## CP - read posterior estimates for adjusted counts (main) and raw counts (for comparison)
 ``` {r}
-
-# read adjusted Bayesian estimates for O - using all CP samples
-obayes_cp_raw <- parseModelledEstimates(global_post="outputs_paper/O_Carba_ALL_raw_28_posterior_global.csv.gz", region_post="outputs_paper/O_Carba_ALL_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
-
-# read raw Bayesian estimates for O - using CP samples from sites with at least 10 CP
-obayes_cp_raw_min10perSite <- parseModelledEstimates(global_post="outputs_paper/O_Carba_min10_raw_28_posterior_global.csv.gz", region_post="outputs_paper/O_Carba_min10_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
-
-```
-
-``` {r}
-
-obayes_cp_raw_coverage <- getCumulativeCoverage(obayes$locus_rank, obayes_cp_raw$global_post) %>% mutate(type="all")
+obayes_cp_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/O_Carba_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/O_Carba_min10_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
 
 obayes_cp_raw_min10perSite_coverage <- getCumulativeCoverage(obayes$locus_rank, obayes_cp_raw_min10perSite$global_post) %>% mutate(type="min10")
-
-# compare results using all data vs only sites with at least 10 CP cases - very little difference
-obayes_cp_raw_coverage %>% 
-  bind_rows(obayes_cp_raw_min10perSite_coverage) %>%
-  filter(rank <=20) %>%
-  ggplot(aes(x=rank, y=mean*100, group=type)) +
-    geom_hline(yintercept=70, linetype=2) + geom_vline(xintercept=c(5,10,15,20), col="grey") +
-    geom_line(aes(col=type), lwd=1) + 
-    geom_ribbon(aes(ymin=lower*100, ymax=upper*100, fill=type), alpha=0.1, linetype=0) +
-    theme_bw() +
-    ylim(0,100) + 
-    labs(x=NULL, y="Cumulative coverage (%)", fill="", colour="", linetype="") +
-    theme(axis.text.x = element_text(angle=90), panel.grid.minor.x = element_blank()) +
-    scale_x_continuous(breaks=seq(1,20), labels=obayes$locus_rank$locus[1:20]) 
-
-
-(obayes_cp_raw_coverage$mean - obayes_cp_raw_min10perSite_coverage$mean)*100
 ```
 
 # combine coverage estimates for subgroups (fatal, ESBL, CP) - Fig4c
@@ -1117,7 +855,6 @@ obayes_raw_coverage_subgroups <- obayes_esbl_raw_min10perSite_coverage %>% mutat
   bind_rows(obayes_raw_coverage %>% filter(subgroup=="Global") %>% mutate(subgroup="All") ) %>%
   mutate(subgroup=fct_relevel(subgroup,c("All", "Fatal", "ESBL", "CP")))
 
-
 o_coverage_globalTop10_subgroups <- plotCoverage(obayes_raw_coverage_subgroups, obayes$locus_rank, maxRank=10, xintercept=c(5,10), cols=group_cols, col_title = "c) Subgroup")
 
 o_coverage_globalTop10_subgroups
@@ -1125,7 +862,7 @@ o_coverage_globalTop10_subgroups
 ```
 
 ``` {r}
-(o_prev_global_dist + o_prev_region_heatmap) / (o_coverage_globalTop10_subgroups + ggtitle("c) Global coverage") + ocoverage_globalTop10_globalRegional + ggtitle("d) Regional coverage") + plot_layout(guides="collect"))
+(o_prev_global_dist + o_prev_region_heatmap) / (o_coverage_globalTop10_subgroups + ggtitle("c) Global coverage") + ocoverage_globalTop10_globalRegional + ggtitle("d) Regional coverage") + patchwork::plot_layout(guides="collect"))
 
 ggsave("figures/Fig4_O_prevAdj_coverageRaw.pdf", width=8, height=8)
 ggsave("figures/Fig4_O_prevAdj_coverageRaw.png", width=8, height=8)
@@ -1504,11 +1241,12 @@ loo_k_coverage_plot <- loo_k_coverage %>%
     labs(y="", x="Excluded study", fill="Coverage")
 ```
 
+# Appendix Fig S2.1 - LOO K
 ``` {r}
-loo_k_ranks / loo_k_coverage_plot + plot_layout(heights=c(4,1), axes="collect")
+loo_k_ranks / loo_k_coverage_plot + patchwork::plot_layout(heights=c(4,1), axes="collect")
 
-ggsave(file="figures/FigS11_LOO_BayesGlobal_Klocus.pdf", width=9, height=11)
-ggsave(file="figures/FigS11_LOO_BayesGlobal_Klocus.png", width=9, height=11)
+ggsave(file="figures/AppendixFigS2.1_LOO_BayesGlobal_Klocus.pdf", width=9, height=11)
+ggsave(file="figures/AppendixFigS2.1_LOO_BayesGlobal_Klocus.png", width=9, height=11)
 
 ```
 
@@ -1561,20 +1299,21 @@ loo_o_coverage_plot <- loo_o_coverage %>%
     labs(y="", x="Excluded study", fill="Coverage")
 ```
 
+# Appendix Fig S2.2
 ``` {r}
 loo_O_plot / loo_o_coverage_plot + plot_layout(heights=c(2,1), axes="collect")
 
-ggsave(file="figures/FigS12_LOO_BayesGlobal_Olocus.pdf", width=9, height=9)
-ggsave(file="figures/FigS12_LOO_BayesGlobal_Olocus.png", width=9, height=9)
+ggsave(file="figures/AppendixFigS2.2_LOO_BayesGlobal_Olocus.pdf", width=9, height=9)
+ggsave(file="figures/AppendixFigS2.2_LOO_BayesGlobal_Olocus.png", width=9, height=9)
 
 ```
 
-# EFFECT OF TEMPORAL THRESHOLD FOR CLUSTERING ON MODELLED ESTIMATES 
 
+# EFFECT OF TEMPORAL THRESHOLD FOR CLUSTERING ON MODELLED ESTIMATES 
 ## compare global prevalence distributions using counts cluster-adjusted using 28 vs 365-day threshold
 ``` {r}
 # read Bayesian estimates for K adjusted using 365 days
-kbayes_365 <- parseModelledEstimates(global_post="outputs_365day/K_Full_min10_adj_365_posterior_global.csv.gz", region_post="outputs_paper/K_Full_min10_adj_28_posterior_subgroup.csv.gz")
+kbayes_365 <- parseModelledEstimates(global_post="outputs_core/K_Full_min10_adj_365_posterior_global.csv.gz", region_post="outputs_core/K_Full_min10_adj_28_posterior_subgroup.csv.gz")
 
 # plot raw vs adjusted distributions, overlaid - for fig S15
 k_dist_28_365 <- comparative_locus_ridgesplot(posterior1=kbayes$global_post,
@@ -1584,7 +1323,7 @@ k_dist_28_365 <- comparative_locus_ridgesplot(posterior1=kbayes$global_post,
                              maxRank=30, type1="28 days", type2="365 days", legend_title="Cluster threshold", scale=2, title="e) Modelled K estimates - posterior")
 
 # read Bayesian estimates for O adjusted using 365 days
-obayes_365 <- parseModelledEstimates(global_post="outputs_365day/O_Full_min10_adj_365_posterior_global.csv.gz", region_post="outputs_365day/O_Full_min10_adj_365_posterior_subgroup.csv.gz", fixOnames = T)
+obayes_365 <- parseModelledEstimates(global_post="outputs_core/O_Full_min10_adj_365_posterior_global.csv.gz", region_post="outputs_core/O_Full_min10_adj_365_posterior_subgroup.csv.gz", fixOnames = T)
 
 # plot raw vs adjusted distributions, overlaid - for fig S15
 o_dist_28_365 <- comparative_locus_ridgesplot(posterior1=obayes$global_post,
@@ -1637,10 +1376,10 @@ timeThreshold_ranks_adj_o <- adj_28_vs_365_o %>%
 timeThreshold_estimates_adj_o + timeThreshold_ranks_adj_o
 ```
 
-## Figure S15
+## Appendix Fig S2.5
 ``` {r}
-(timeThreshold_ranks_adj + timeThreshold_ranks_adj_o) / (timeThreshold_estimates_adj + timeThreshold_estimates_adj_o) / (k_dist_28_365 + o_dist_28_365 + plot_layout(guides="collect")) + plot_layout(heights=c(1,1,2)) & theme(legend.position='bottom')
+(timeThreshold_ranks_adj + timeThreshold_ranks_adj_o) / (timeThreshold_estimates_adj + timeThreshold_estimates_adj_o) / (k_dist_28_365 + o_dist_28_365 + patchwork::plot_layout(guides="collect")) + patchwork::plot_layout(heights=c(1,1,2)) & theme(legend.position='bottom')
 
-ggsave("figures/FigS15_temporalThresholdModelled.pdf", width=8, height=10)
-ggsave("figures/FigS15_temporalThresholdModelled.png", width=8, height=10)
+ggsave("figures/AppendixFigS2.5_temporalThresholdModelled.pdf", width=8, height=10)
+ggsave("figures/AppendixFigS2.5_temporalThresholdModelled.png", width=8, height=10)
 ```
