@@ -1,6 +1,14 @@
 # README
 
-## Section 1: Model Run File Explanation
+## Reproducing figures and tables from the paper
+
+`DataAnalysis.Rmd` - R code to generate figures and tables based on line-list data
+
+`DataAnalysis_ModelledEstimates.Rmd` - R code to generate figures and tables based on modelled estimates of K/O prevalence (see details of Bayesian modelling below)
+
+`DataAnalysis_Longitudinal.Rmd` - R code to generate Figure S6, based on longitudinal line-list data from 3 sites
+
+## Model Run File Explanation
 
 Loads the file: `model_run_file.R`
 
@@ -62,7 +70,7 @@ The file begins by loading the above R packages needed for Bayesian modeling and
     -   Checks model diagnostics such as maximum Rhat values and minimum effective sample size ratios.
     -   Saves the fitted model as an RDS file, naming it based on the extracted metadata.
 
-## Section 2: Model Process File Explanation
+## Model Process File Explanation
 
 Loads the file: `model_process_file.R`
 
@@ -111,7 +119,7 @@ The file begins by loading the necessary libraries for data manipulation, string
 
 ## 
 
-## Section 3: Diagnostic Table File Explanation
+## Diagnostic Table File Explanation
 
 Loads the file: `diagnostics_table.R`
 
