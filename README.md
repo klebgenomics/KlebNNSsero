@@ -2,9 +2,9 @@
 
 ## Figures and tables from the paper
 
-`figures` and `tables` directories contain all figures and tables from the paper.
+Directories `figures` and `tables` contain all figures and tables from the paper.
 
-The code to generate these are in the following R markdown files, which draws on functions in `seroepi_functions.R`:
+The code to generate these are in the following R markdown files, which draw on functions in `seroepi_functions.R`:
 
 `DataAnalysis.Rmd` - R code to generate figures and tables based on line-list data
 
