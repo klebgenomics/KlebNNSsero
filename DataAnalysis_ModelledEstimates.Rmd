@@ -1192,7 +1192,7 @@ loo_k_ranks <- loo %>%
 
 # LOO - K coverage 
 ``` {r}
-studies <- unique(data$Study)
+studies <- unique(data_NNS_sites10$Study)
 studies <- studies[-c(8,12)]
 studies <- c(studies, c("AIIMS", "NeoOBS"))
 
@@ -1210,7 +1210,7 @@ loo_k_coverage <- tibble(
 for (study in studies) {
 
 # read raw Bayesian estimates for K
-loo_kbayes_raw <- parseModelledEstimates(global_post=paste0("outputs_LOO/posterior/K_Full_min10_raw_28_LOO_",study,"_posterior_global.csv.gz"), region_post=paste0("outputs_LOO/posterior/K_Full_min10_raw_28_LOO_",study,"_posterior_subgroup.csv.gz"))
+loo_kbayes_raw <- parseModelledEstimates(global_post=paste0("outputs_LOO/K_Full_min10_raw_28_LOO_",study,"_posterior_global.csv.gz"), region_post=paste0("outputs_LOO/K_Full_min10_raw_28_LOO_",study,"_posterior_subgroup.csv.gz"))
 
 this_coverage <- getCumulativeCoverageGlobalRegional(loo_kbayes_raw, kbayes$locus_rank) %>%
   mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa"))) %>%
@@ -1265,7 +1265,7 @@ loo_o_coverage <- tibble(
 for (study in studies) {
 
 # read raw Bayesian estimates for K
-loo_obayes_raw <- parseModelledEstimates(global_post=paste0("outputs_LOO/posterior/O_Full_min10_raw_28_LOO_",study,"_posterior_global.csv.gz"), region_post=paste0("outputs_LOO/posterior/O_Full_min10_raw_28_LOO_",study,"_posterior_subgroup.csv.gz"), fixOnames = T)
+loo_obayes_raw <- parseModelledEstimates(global_post=paste0("outputs_LOO/O_Full_min10_raw_28_LOO_",study,"_posterior_global.csv.gz"), region_post=paste0("outputs_LOO/O_Full_min10_raw_28_LOO_",study,"_posterior_subgroup.csv.gz"), fixOnames = T)
 
 this_coverage <- getCumulativeCoverageGlobalRegional(loo_obayes_raw, obayes$locus_rank) %>%
   mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa"))) %>%
