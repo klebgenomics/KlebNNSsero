@@ -22,16 +22,13 @@ library(sf) # v1.0-17
 
 ## load kleborate processing functions
 ``` {r}
-
-source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/kleborate_functions.R")
-
 source("seroepi_functions.R")
+source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/kleborate_functions.R")
 ```
 
 ## set colour palettes
 ``` {r}
 # source: https://davidmathlogic.com/colorblind/#%23D81B60-%231E88E5-%23FFC107-%23004D40
-  
 region_cols <- c(`Southern Asia` ="#D81B60", `Western Africa`="#1E88E5", `Eastern Africa`="#FFC107", `Southern Africa`="#81B1A9", Global="black")
 ```
 
@@ -207,7 +204,7 @@ write.csv(country_summary, file="tables/Table1_country_study_breakdown.csv", row
 ```
 
 
-# Fig S2 - overview raw data
+# Appendix Fig S1.1 - overview raw data
 ``` {r}
 
 k_raw_count <- data_NNS_sites10 %>% filter(K_locus_confidence !="Untypeable") %>%
@@ -249,7 +246,7 @@ KL_country_jitterO <- data_NNS_sites10 %>%
                                `O4`="#CC79A7",
                                `O3b`="pink",
                                `O5`="purple",
-                               `OL13`="#33cccc",
+                               `O13`="#33cccc",
                                 `other`="black"))
 
 
@@ -279,6 +276,7 @@ k_raw_bar_ST <- data_NNS_sites10 %>%
 k_raw_bar_O <- data_NNS_sites10 %>%
   mutate(O_genotype_common = O_genotype) %>%
   mutate(O_genotype_common = replace(O_genotype_common, O_genotype_common %in% c("O1.v3", "O12", "O2a.v3", "OL102", "OL103", "OL104"), "other")) %>%
+  mutate(O_genotype_common = fct_relevel(O_genotype_common, "O1.v1", "O1.v2", "O2a", "O2afg", "O3/O3a", "O3b", "O4", "O5", "O13", "other")) %>%
   ggplot(aes(y=K_locus, fill=O_genotype_common)) + 
   geom_bar(position="fill", alpha=0.5) +
   ylim(rev(k_raw_count$K_locus[k_raw_count$n>=4])) + 
@@ -292,7 +290,7 @@ k_raw_bar_O <- data_NNS_sites10 %>%
                                `O4`="#CC79A7",
                                `O3b`="pink",
                                `O5`="purple",
-                               `OL13`="#33cccc",
+                               `O13`="#33cccc",
                                 `other`="black")) +
   theme_bw() + 
   theme(legend.position="right") +
@@ -305,12 +303,12 @@ k_raw_bar_O <- data_NNS_sites10 %>%
 ``` {r}
 k_raw_bar_ST + k_raw_bar + ggtitle("a) Crude K frequency") + KL_country_jitterO + ggtitle("b) K distribution by country") + theme(legend.position="none") + k_raw_bar_O + patchwork::plot_layout(widths=c(1,2,4,1))
 
-ggsave(file="figures/FigS2_raw_K_country_O.pdf", width=9, height=11)
-ggsave(file="figures/FigS2_raw_K_country_O.png", width=9, height=11)
+ggsave(file="figures/AppendixFigS1.1_raw_K_country_O.pdf", width=9, height=11)
+ggsave(file="figures/AppendixFigS1.1_raw_K_country_O.png", width=9, height=11)
 ```
 
 
-# Fig S3 - temporal spread of K/O types per site
+# Appendix Fig S1.2 - temporal spread of K/O types per site
 ``` {r}
 commonKO <- data_NNS_sites10 %>% 
   mutate(Clone=paste(ST, K_locus, O_type)) %>% 
@@ -328,8 +326,8 @@ data_NNS_sites10 %>%
     scale_fill_manual(values=c("lightgrey",unname(pals::alphabet()))) + 
   theme(legend.position="bottom")
 
-ggsave(file="figures/FigS3_clones_site_year.pdf", width=9, height=12)
-ggsave(file="figures/FigS3_clones_site_year.png", width=9, height=12)
+ggsave(file="figures/AppendixFigS1.2_clones_site_year.pdf", width=9, height=12)
+ggsave(file="figures/AppendixFigS1.2_clones_site_year.png", width=9, height=12)
 ```
 
 # compare crude K prevalence at different time thresholds
@@ -416,8 +414,8 @@ temporal_cluster_threshold_rank <- K_crude_thresholds %>%
 ``` {r}
 temporal_cluster_threshold_proportion + temporal_cluster_threshold_rank
 
-ggsave(file="figures/FigS16_ClusterDaysThreshold.pdf", width=9, height=12)
-ggsave(file="figures/FigS16_ClusterDaysThreshold.png", width=9, height=12)
+ggsave(file="figures/AppendixFigS2.6_ClusterDaysThreshold.pdf", width=9, height=12)
+ggsave(file="figures/AppendixFigS2.6_ClusterDaysThreshold.png", width=9, height=12)
 
 ```
 
@@ -517,8 +515,8 @@ snp_cluster_threshold_rank <- K_crude_thresholds_snps %>%
 ``` {r}
 snp_cluster_threshold_proportion + snp_cluster_threshold_rank
 
-ggsave(file="figures/FigS17_ClusterSNPsThreshold.pdf", width=9, height=12)
-ggsave(file="figures/FigS17_ClusterSNPsThreshold.png", width=9, height=12)
+ggsave(file="figures/AppendixFigS2.7_ClusterSNPsThreshold.pdf", width=9, height=12)
+ggsave(file="figures/AppendixFigS2.7_ClusterSNPsThreshold.png", width=9, height=12)
 
 ```
 

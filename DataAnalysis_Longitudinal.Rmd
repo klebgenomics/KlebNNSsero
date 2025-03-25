@@ -1,7 +1,7 @@
 ---
-title: "AntigenPaper_Longitudinal"
+title: "DataAnalysis_Longitudinal"
 author: "Kat Holt"
-date: "2025-03-13"
+date: "2025-03-25"
 output: html_document
 ---
 
@@ -13,59 +13,25 @@ library(ggplot2)
 library(tidyverse)
 library(dplyr)
 library(patchwork)
-library(reshape2)
-library(RColorBrewer)
-library(ggridges)
-library(pals)
-#library(meta)
-#library(ggpol) # used by pyramid plot function
 ```
 
 # Setup
 
 ## load sero-epi functions
 ``` {r}
-
 source("seroepi_functions.R")
 source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/kleborate_functions.R")
-source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/plotting_functions.R")
-
-#source("~/Documents/GitHub/KleborateR/kleborate_functions.R")
-#source("~/Documents/GitHub/KleborateR/plotting_functions.R")
-
 ```
 
 ## set colour palettes
 ``` {r}
 # source: https://davidmathlogic.com/colorblind/#%23D81B60-%231E88E5-%23FFC107-%23004D40
-  
 region_cols <- c(`Southern Asia` ="#D81B60", `Western Africa`="#1E88E5", `Eastern Africa`="#FFC107", `Southern Africa`="#81B1A9", Global="black")
-
-group_cols <- c(All="black", Fatal ="#D81B60", ESBL="#1E88E5", CP="#FFC107")
 ```
 
 # temporal variation - longitudinal studies
 ``` {r}
-data <- read_csv("Neonatal_shareable_20241002_28.csv")
-
-data_long <- filterData(data, studies=c("Kilifi", "CHRF", "MLW"), years=sort(unique(data$Year)))
-
-data_long$filtered %>% group_by(Year, Study) %>% count()
-
-data_long$filtered %>% 
-  ggplot(aes(x=Year)) + 
-  geom_bar() + 
-  facet_wrap(~Country, ncol=1) +
-  theme_bw() + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, 
-                                   colour = "black"), 
-        axis.title = element_text(size = 10, colour = "black"),
-        axis.text.y = element_text(size = 10, colour = "black"),
-        plot.title = element_text(hjust=0.5),
-        legend.position = "right") +
-  labs(x="Year", y="", fill="Country")
-
-data_long <- data_long$filtered %>% filter(Year>=2004)
+data_long <- read_csv("tables/longitudinal_data.csv")
 
 # distribution of longitudinal data for analysis
 timeline_plot_longData <- data_long %>% 
@@ -87,14 +53,7 @@ timeline_plot_longData
 ```
 
 ``` {r}
-data_long <- data_long %>%
-  mutate(O_genotype=replace(O_locus_variant, O_locus_variant=="O1 (O1/O2v1)", "O1.v1")) %>%
-  mutate(O_genotype=replace(O_genotype, O_genotype=="O1 (O1/O2v2)", "O1.v2")) %>%
-  mutate(O_genotype=replace(O_genotype, O_genotype=="O1 (O1/O2v3)", "O1v3")) %>%
-  mutate(O_genotype=replace(O_genotype, O_genotype=="O2a (O1/O2v1)", "O2a")) %>%
-  mutate(O_genotype=replace(O_genotype, O_genotype=="O2a (O1/O2v3)", "O2a.v3")) %>%
-  mutate(O_genotype=replace(O_genotype, O_genotype=="O2afg (O1/O2v2)", "O2afg"))
-  
+
 data_long_thru2017 <- data_long %>% filter(Year<=2017)
 data_long_post2017 <- data_long %>% filter(Year>2017)
 
@@ -231,9 +190,9 @@ coverage_plot_longPre_globalRank_country_O <- longIn_cov$cov_table_long %>% muta
 ```
 
 ``` {r}
-timeline_plot_longData / (coverage_plot_longPre_globalRank_country + ggtitle("K coverage, Training period") + coverage_plot_long_globalRank_country + ggtitle("K coverage, Post-training period") + plot_layout(guides="collect")) / (coverage_plot_long_globalRank_country_O + ggtitle("O coverage, Training period") + coverage_plot_longPre_globalRank_country_O + ggtitle("O coverage, Post-training period") + plot_layout(guides="collect")) +plot_layout(heights=c(3,2,2))
+timeline_plot_longData / (coverage_plot_longPre_globalRank_country + ggtitle("K coverage, Training period") + coverage_plot_long_globalRank_country + ggtitle("K coverage, Post-training period") + patchwork::plot_layout(guides="collect")) / (coverage_plot_long_globalRank_country_O + ggtitle("O coverage, Training period") + coverage_plot_longPre_globalRank_country_O + ggtitle("O coverage, Post-training period") + patchwork::plot_layout(guides="collect")) +plot_layout(heights=c(3,2,2))
 
-ggsave("figures/FigS18_Longitudinal.pdf", height=9, width=8)
-ggsave("figures/FigS18_Longitudinal.png", height=9, width=8)
+ggsave("figures/FigS6_Longitudinal.pdf", height=9, width=8)
+ggsave("figures/FigS6_Longitudinal.png", height=9, width=8)
 ```
 
