@@ -37,7 +37,12 @@ region_cols <- c(`Southern Asia` ="#D81B60", `Western Africa`="#1E88E5", `Easter
 data_NNS_sites10 <- read_tsv("tables/TableS3.tsv")
 ```
 
-# countries included
+## write out O genotype definitions for Appendix Table S1.6
+``` {r}
+data_NNS_sites10 %>% group_by(O_genotype, O_locus, O_type) %>% count() %>% write_tsv("tables/AppendixTableS1.6.tsv")
+```
+
+## countries included
 ``` {r}
 countries <- data_NNS_sites10 %>%
   group_by(Country, Region) %>% 

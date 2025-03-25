@@ -1050,7 +1050,8 @@ loo_O <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_SPINZ_global_estimates.cs
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo) %>%
   mutate(locus=replace(locus, locus=="O2a.v1", "O2a")) %>%
-  mutate(locus=replace(locus, locus=="O2afg.v2", "O2afg"))
+  mutate(locus=replace(locus, locus=="O2afg.v2", "O2afg")) %>%
+  mutate(locus=replace(locus, locus=="OL13", "O13"))
 
 ```
 
