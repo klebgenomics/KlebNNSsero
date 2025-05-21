@@ -1,7 +1,7 @@
 ---
 title: "DataAnalysis_Longitudinal"
 author: "Kat Holt"
-date: "2025-03-25"
+date: "2025-05-13"
 output: html_document
 ---
 
@@ -20,7 +20,6 @@ library(patchwork)
 ## load sero-epi functions
 ``` {r}
 source("seroepi_functions.R")
-source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/kleborate_functions.R")
 ```
 
 ## set colour palettes
@@ -29,7 +28,7 @@ source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/kleborate
 region_cols <- c(`Southern Asia` ="#D81B60", `Western Africa`="#1E88E5", `Eastern Africa`="#FFC107", `Southern Africa`="#81B1A9", Global="black")
 ```
 
-# temporal variation - longitudinal studies
+
 ``` {r}
 data_long <- read_csv("tables/longitudinal_data.csv")
 

@@ -1,7 +1,7 @@
 ---
 title: "Data Analysis using Bayesian Modelled Estimates"
 author: "Kat Holt"
-date: "2025-03-04"
+date: "2025-05-13"
 output: html_document
 ---
 
@@ -24,7 +24,6 @@ library(logistf)
 ## load sero-epi functions
 ``` {r}
 source("seroepi_functions.R")
-source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/kleborate_functions.R")
 ```
 
 ## set colour palettes
@@ -36,7 +35,7 @@ group_cols <- c(All="black", Fatal ="#D81B60", ESBL="#1E88E5", CP="#FFC107")
 
 ## load data on included samples - Table S3
 ``` {r}
-data_NNS_sites10 <- read_tsv("tables/TableS3.tsv")
+data_NNS_sites10 <- read_tsv("tables/TableS3_IsolatesIncluded_NEEDSACCESSIONS.tsv")
 ```
 
 
@@ -46,10 +45,10 @@ data_NNS_sites10 <- read_tsv("tables/TableS3.tsv")
 ``` {r}
 
 # read adjusted Bayesian estimates for K
-kbayes <- parseModelledEstimates(global_post="outputs_core/K_Full_min10_adj_28_posterior_global.csv.gz", region_post="outputs_core/K_Full_min10_adj_28_posterior_subgroup.csv.gz")
+kbayes <- parseModelledEstimates(global_post="outputs_core/K_Full_ALL_adj_28_posterior_global.csv.gz", region_post="outputs_core/K_Full_ALL_adj_28_posterior_subgroup.csv.gz")
 
 # read raw Bayesian estimates for K
-kbayes_raw <- parseModelledEstimates(global_post="outputs_core/K_Full_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/K_Full_min10_raw_28_posterior_subgroup.csv.gz")
+kbayes_raw <- parseModelledEstimates(global_post="outputs_core/K_Full_ALL_raw_28_posterior_global.csv.gz", region_post="outputs_core/K_Full_ALL_raw_28_posterior_subgroup.csv.gz")
 
 ```
 
@@ -169,10 +168,10 @@ ggsave("figures/FigS3_RegionalKBayesDist.png", width=6, height=9)
 ``` {r}
 
 # read adjusted Bayesian estimates for O
-obayes <- parseModelledEstimates(global_post ="outputs_core/O_Full_min10_adj_28_posterior_global.csv.gz", region_post = "outputs_core/O_Full_min10_adj_28_posterior_subgroup.csv.gz", fixOnames = T)
+obayes <- parseModelledEstimates(global_post ="outputs_core/O_Full_ALL_adj_28_posterior_global.csv.gz", region_post = "outputs_core/O_Full_ALL_adj_28_posterior_subgroup.csv.gz", fixOnames = T)
 
 # read raw Bayesian estimates for O
-obayes_raw <- parseModelledEstimates(global_post ="outputs_core/O_Full_min10_raw_28_posterior_global.csv.gz", region_post = "outputs_core/O_Full_min10_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
+obayes_raw <- parseModelledEstimates(global_post ="outputs_core/O_Full_ALL_raw_28_posterior_global.csv.gz", region_post = "outputs_core/O_Full_ALL_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
 
 ```
 
@@ -594,19 +593,15 @@ K_rank_EA <- kbayes$region_est %>% ungroup %>% filter(subgroup=="Eastern Africa"
 K_rank_SAs <- kbayes$region_est %>% ungroup %>% filter(subgroup=="Southern Asia") %>% arrange(-mean) %>% mutate(rank=row_number())
 
 
-# get top-8 within each region - gives 21 loci
+# get top-8 within each region - gives 20 loci
 n<-8
 
 topN <- bind_rows(K_rank_SA, K_rank_EA) %>% bind_rows(K_rank_WA) %>% bind_rows(K_rank_SAs) %>% filter(rank<=n) %>% pull(locus) %>% unique()
 
 length(unique(topN))
 
-kbayes$locus_rank[kbayes$locus_rank$locus %in% topN,]
-
-# remove KL8, as this only benefits Southern Africa which already exceeds 80% without KL9, and brings us back to 20 loci
 k_rank_region8 <- kbayes$locus_rank[kbayes$locus_rank$locus %in% topN,] %>% 
-  filter(locus!="KL9") %>%
-  mutate(rank=1:(length(unique(topN))-1))
+  mutate(rank=1:(length(unique(topN))))
 
 # calculate global & regional coverage for these K - Fig 3bii
 kbayes_raw_coverage_top8perRegion <- getCumulativeCoverageGlobalRegional(kbayes_raw, k_rank_region8) %>%
@@ -969,7 +964,7 @@ k_rank_region8 %>% left_join(kbayes$locus, by="locus") %>% filter(rank.y>20)
 
 # Leave One out (LOO)
 ## Sensitivity analysis - O type, Bayesian estimate, adjusted
-``` {r}
+``` {r loo_O}
 loo <- obayes$global_est %>% mutate(Study="None")
 
 loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_AKU_global_estimates.csv") %>% 
@@ -991,7 +986,7 @@ loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_BARNARDS_global_estimates.c
   bind_rows(loo)
 
 loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_Botswana_global_estimates.csv") %>% 
-  mutate(Study="Botswana") %>% 
+  mutate(Study="NIMBIplus") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
@@ -1056,7 +1051,7 @@ loo_O <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_SPINZ_global_estimates.cs
 ```
 
 # Bayes global sensitivity analysis, top20 in any, print rank  - O type
-``` {r}
+``` {r loo_O_plot}
 loo_O_plot <- loo_O %>% 
   filter(rank<=9) %>%
   ggplot(aes(y=locus, x=Study, fill=factor(rank))) +
@@ -1078,7 +1073,7 @@ loo_O_plot <- loo_O %>%
 
 
 ## Sensitivity analysis - K locus, Bayesian estimate, adjusted
-``` {r}
+``` {r loo_k}
 loo <- kbayes$global_est %>% mutate(Study="None")
 
 loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_AKU_global_estimates.csv") %>% 
@@ -1100,7 +1095,7 @@ loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_BARNARDS_global_estimates.c
   bind_rows(loo)
 
 loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_Botswana_global_estimates.csv") %>% 
-  mutate(Study="Botswana") %>% 
+  mutate(Study="NIMBIplus") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
@@ -1192,10 +1187,11 @@ loo_k_ranks <- loo %>%
 
 
 # LOO - K coverage 
-``` {r}
+``` {r loo_k_coverage}
 studies <- unique(data_NNS_sites10$Study)
-studies <- studies[-c(8,12)]
-studies <- c(studies, c("AIIMS", "NeoOBS"))
+studies[c(2,8,12)]
+studies <- studies[-c(2,8,12)]
+studies <- c(studies, c("AIIMS", "NeoOBS", "Botswana")) # filenames
 
 loo_k_coverage <- tibble(
     rank = integer(0),
@@ -1227,6 +1223,7 @@ loo_k_coverage_plot <- loo_k_coverage %>%
   mutate(Study=if_else(Study=="NeoOBS", "NeoOBS-India", Study)) %>%
   mutate(Study=if_else(Study=="AIIMS", "DH", Study)) %>%
   mutate(Study=if_else(Study=="GBS", "GBSCOP", Study)) %>%
+  mutate(Study=if_else(Study=="Botswana", "NIMBIplus", Study)) %>%
   ggplot(aes(x=Study, y=subgroup, fill=mean)) + 
     geom_tile() + 
     geom_text(aes(y=subgroup, x=Study, label=round(100*mean, 2)), size=3) +
@@ -1251,7 +1248,7 @@ ggsave(file="figures/AppendixFigS2.1_LOO_BayesGlobal_Klocus.png", width=9, heigh
 
 ```
 
-``` {r}
+``` {r loo_o_coverage}
 loo_o_coverage <- tibble(
     rank = integer(0),
     mean = double(0),
@@ -1277,7 +1274,7 @@ loo_o_coverage <- bind_rows(loo_o_coverage, this_coverage)
 
 ```
 
-``` {r}
+``` {r loo_o_coverage_plot}
 loo_o_coverage_plot <- loo_o_coverage %>% 
   mutate(subgroup=fct_relevel(subgroup,rev(c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))) %>%
   bind_rows(obayes_raw_coverage %>% mutate(Study="None")) %>% 
@@ -1285,6 +1282,7 @@ loo_o_coverage_plot <- loo_o_coverage %>%
   mutate(Study=if_else(Study=="NeoOBS", "NeoOBS-India", Study)) %>%
   mutate(Study=if_else(Study=="AIIMS", "DH", Study)) %>%
   mutate(Study=if_else(Study=="GBS", "GBSCOP", Study)) %>%
+  mutate(Study=if_else(Study=="Botswana", "NIMBIplus", Study)) %>%
   ggplot(aes(x=Study, y=subgroup, fill=mean)) + 
     geom_tile() + 
     geom_text(aes(y=subgroup, x=Study, label=round(100*mean, 2)), size=3) +
@@ -1314,7 +1312,7 @@ ggsave(file="figures/AppendixFigS2.2_LOO_BayesGlobal_Olocus.png", width=9, heigh
 ## compare global prevalence distributions using counts cluster-adjusted using 28 vs 365-day threshold
 ``` {r}
 # read Bayesian estimates for K adjusted using 365 days
-kbayes_365 <- parseModelledEstimates(global_post="outputs_core/K_Full_min10_adj_365_posterior_global.csv.gz", region_post="outputs_core/K_Full_min10_adj_28_posterior_subgroup.csv.gz")
+kbayes_365 <- parseModelledEstimates(global_post="outputs_core/K_Full_ALL_adj_365_posterior_global.csv.gz", region_post="outputs_core/K_Full_ALL_adj_28_posterior_subgroup.csv.gz")
 
 # plot raw vs adjusted distributions, overlaid - for fig S15
 k_dist_28_365 <- comparative_locus_ridgesplot(posterior1=kbayes$global_post,
@@ -1324,7 +1322,7 @@ k_dist_28_365 <- comparative_locus_ridgesplot(posterior1=kbayes$global_post,
                              maxRank=30, type1="28 days", type2="365 days", legend_title="Cluster threshold", scale=2, title="e) Modelled K estimates - posterior")
 
 # read Bayesian estimates for O adjusted using 365 days
-obayes_365 <- parseModelledEstimates(global_post="outputs_core/O_Full_min10_adj_365_posterior_global.csv.gz", region_post="outputs_core/O_Full_min10_adj_365_posterior_subgroup.csv.gz", fixOnames = T)
+obayes_365 <- parseModelledEstimates(global_post="outputs_core/O_Full_ALL_adj_365_posterior_global.csv.gz", region_post="outputs_core/O_Full_ALL_adj_365_posterior_subgroup.csv.gz", fixOnames = T)
 
 # plot raw vs adjusted distributions, overlaid - for fig S15
 o_dist_28_365 <- comparative_locus_ridgesplot(posterior1=obayes$global_post,

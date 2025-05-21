@@ -1,7 +1,7 @@
 ---
 title: "DataAnalysis"
 author: "Kat Holt"
-date: "2025-03-25"
+date: "2025-05-13"
 output: html_document
 ---
 
@@ -23,7 +23,6 @@ library(sf) # v1.0-17
 ## load kleborate processing functions
 ``` {r}
 source("seroepi_functions.R")
-source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/kleborate_functions.R")
 ```
 
 ## set colour palettes
@@ -32,9 +31,9 @@ source("https://raw.githubusercontent.com/klebgenomics/KleborateR/main/kleborate
 region_cols <- c(`Southern Asia` ="#D81B60", `Western Africa`="#1E88E5", `Eastern Africa`="#FFC107", `Southern Africa`="#81B1A9", Global="black")
 ```
 
-## load data on included samples - Table S3
+## load data on included samples - Table S3 (includes alternative clusters)
 ``` {r}
-data_NNS_sites10 <- read_tsv("tables/TableS3.tsv")
+data_NNS_sites10 <- read_tsv("tables/TableS3_IsolatesIncluded_NEEDSACCESSIONS.tsv")
 ```
 
 ## write out O genotype definitions for Appendix Table S1.6
@@ -144,7 +143,7 @@ se_region_plot
 
 
 # Fig 1: sample timeline barplots plus map
-``` {r, eval=F}
+``` {r}
 patchwork::wrap_elements(panel=timeline_barplot) / patchwork::wrap_elements(se_region_plot) + patchwork::plot_annotation(tag_levels ="a")
 
 ggsave("figures/Fig1_timelineRegionCountryStudy_siteMap.pdf", width=7, height=7)
@@ -269,7 +268,7 @@ k_raw_bar_ST <- data_NNS_sites10 %>%
   geom_bar(position="fill") +
   ylim(rev(k_raw_count$K_locus[k_raw_count$n>=4])) + 
   labs(fill="ST", y=NULL, x="ST") + 
-  scale_fill_manual(values=c("black","skyblue",unname(pals::alphabet()),"grey")) +
+  scale_fill_manual(values=c("darkorange","skyblue",unname(alphabet()), "purple", "magenta", "grey")) +
   theme_bw() + 
   theme(legend.position="left") +
   scale_x_reverse() +
@@ -328,7 +327,7 @@ data_NNS_sites10 %>%
     theme_bw() + 
     theme(axis.text.x = element_text(angle=45, hjust=1, size=10), 
           axis.text.y=element_text(size=10)) + facet_wrap(~Region+Country+SiteLabel) +
-    scale_fill_manual(values=c("lightgrey",unname(pals::alphabet()))) + 
+    scale_fill_manual(values=c("lightgrey",unname(alphabet()), "skyblue")) + 
   theme(legend.position="bottom")
 
 ggsave(file="figures/AppendixFigS1.2_clones_site_year.pdf", width=9, height=12)
@@ -336,12 +335,6 @@ ggsave(file="figures/AppendixFigS1.2_clones_site_year.png", width=9, height=12)
 ```
 
 # compare crude K prevalence at different time thresholds
-
-``` {r}
-alternative_clusters <- read_csv("tables/alternative_clusters.csv")
-
-data_NNS_sites10 <- data_NNS_sites10 %>% left_join(alternative_clusters)
-```
 
 ``` {r}
 K_crude_365days <- data_NNS_sites10 %>%

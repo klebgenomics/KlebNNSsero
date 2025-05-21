@@ -4,6 +4,56 @@ require(dplyr)
 require(patchwork)
 require(ggridges)
 
+
+raw_adj_prop <- function(
+    kleborate_data,
+    grouping_vars = c("K_locus", "Country"),
+    summarise_by = "Country",
+    adj_vars = c("Cluster")
+){
+  
+  # Check args
+  if(!is_tibble(kleborate_data)){stop(paste(base::quote(kleborate_data), "must be a tibble"))}
+  if(!is.character(summarise_by)){stop("summarise_by must be a string (variable name)")}
+  if(summarise_by=='default'){summarise_by=grouping_vars[1]}
+  for(i in c(adj_vars, grouping_vars)){
+    if(!i %in% names(kleborate_data)){
+      stop(paste(i, "not in", base::quote(kleborate_data)))
+    }
+  }
+  
+  # Check grouping vars
+  for (i in grouping_vars) { 
+    if(i %in% adj_vars){
+      message(paste('grouping_var:', i, 'in adj_vars, removing from adj_vars'))
+      adj_vars = adj_vars[!adj_vars == i]
+    }
+  }
+  message(paste("Grouping vars:", paste(grouping_vars, collapse = ", ")))
+  message(paste("Summarising by:", summarise_by))
+  message(paste("Adj vars:", paste(adj_vars, collapse = ", ")))
+  
+  
+  return(
+    kleborate_data |>
+      dplyr::reframe(  # Perform a raw and adjusted count
+        .by = tidyselect::all_of(grouping_vars),  # Per group (mitigates a group_by function call)
+        raw_count = dplyr::n(),                                   # Raw
+        adj_count = dplyr::n_distinct(across(all_of(adj_vars))),  # Adjusted
+      ) |>
+      dplyr::mutate(  # Perfrom proportion calculation
+        .by = tidyselect::all_of(summarise_by),  # Group by the summary variable (mitigates a group_by function call)
+        raw_prop = raw_count/sum(raw_count),  # Raw
+        adj_prop = adj_count/sum(adj_count),   # Adjusted
+        raw_sum = sum(raw_count),
+        adj_sum = sum(adj_count)
+      ) |>
+      dplyr::distinct() |>
+      dplyr:: arrange(-adj_count)
+  )}  
+
+
+
 parseModelledEstimates <- function(global_post, region_post, fixOnames=FALSE, median=FALSE) {
   
   # get global posterior
