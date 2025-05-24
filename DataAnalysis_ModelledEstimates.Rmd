@@ -669,7 +669,7 @@ cp_counts <- data_NNS_sites10 %>% filter(resistance_score>=2) %>% group_by(Regio
 cp_counts <- cp_counts %>% bind_rows(list(Region="Global", n=sum(cp_counts$n)))
 
 total_counts <- data_NNS_sites10 %>% group_by(Region) %>% count()
-total_counts <- total_counts %>% bind_rows(list(Region="Global", n=sum(cp_counts$n)))
+total_counts <- total_counts %>% bind_rows(list(Region="Global", n=sum(total_counts$n)))
 ```
 
 ``` {r}
