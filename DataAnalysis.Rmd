@@ -16,6 +16,7 @@ library(patchwork) # v1.3.0
 library(pals) # v.19
 library(rnaturalearth) # v1.0.1
 library(sf) # v1.0-17
+library(Cairo) # needed to plot to PDF with symbols in legend (for O type labels)
 ```
 
 # Setup
@@ -232,7 +233,7 @@ length(k_raw_count$K_locus[k_raw_count$n>=4])
 
 KL_country_jitterO <- data_NNS_sites10 %>% 
   mutate(O_genotype_common = O_genotype) %>%
-  mutate(O_genotype_common = replace(O_genotype_common, O_genotype_common %in% c("O1.v3", "O12", "O2a.v3", "OL102", "OL103", "OL104"), "other")) %>%
+  mutate(O_genotype_common = replace(O_genotype_common, O_genotype_common %in% c("O1⍺β,2⍺𝛾", "O12", "O2⍺𝛾", "O14", "O10", "O15"), "other")) %>%
   ggplot(aes(x=Country, y=K_locus, col=O_genotype_common)) + 
   geom_jitter(alpha=0.5) +
   ylim(rev(k_raw_count$K_locus[k_raw_count$n>=4])) + 
@@ -241,14 +242,14 @@ KL_country_jitterO <- data_NNS_sites10 %>%
   labs(col="O type", y=NULL) +
   theme(axis.text.x = element_text(angle=45, hjust=1, size=10), 
         axis.text.y=element_text(size=10)) +
-  scale_colour_manual(values=c(`O1.v1`="#009E73", 
-                               `O3/O3a`="#cc3300",
-                               `O2a`="#F0E442",
-                               `O2afg`="#ff8c1a",
-                               `O1.v2`="#0072B2",
+  scale_fill_manual(values=c(`O1⍺β,2⍺`="#009E73", 
+                               `O3⍺/O3β`="#cc3300",
+                               `O2⍺`="#F0E442",
+                               `O2β`="#ff8c1a",
+                               `O1⍺β,2β`="#0072B2",
                              #  `O1 (O1/O2v1)`="#56B4E9",
                                `O4`="#CC79A7",
-                               `O3b`="pink",
+                               `O3𝛾`="pink",
                                `O5`="purple",
                                `O13`="#33cccc",
                                 `other`="black"))
@@ -279,25 +280,26 @@ k_raw_bar_ST <- data_NNS_sites10 %>%
 
 k_raw_bar_O <- data_NNS_sites10 %>%
   mutate(O_genotype_common = O_genotype) %>%
-  mutate(O_genotype_common = replace(O_genotype_common, O_genotype_common %in% c("O1.v3", "O12", "O2a.v3", "OL102", "OL103", "OL104"), "other")) %>%
-  mutate(O_genotype_common = fct_relevel(O_genotype_common, "O1.v1", "O1.v2", "O2a", "O2afg", "O3/O3a", "O3b", "O4", "O5", "O13", "other")) %>%
+  mutate(O_genotype_common = replace(O_genotype_common, O_genotype_common %in% c("O1⍺β,2⍺𝛾", "O12", "O2⍺𝛾", "O14", "O10", "O15"), "other")) %>%
+  mutate(O_genotype_common = fct_relevel(O_genotype_common, "O1⍺β,2⍺", "O1⍺β,2β", "O2⍺", "O2β", "O3⍺/O3β", "O3𝛾", "O4", "O5", "O13", "other")) %>%
   ggplot(aes(y=K_locus, fill=O_genotype_common)) + 
   geom_bar(position="fill", alpha=0.5) +
   ylim(rev(k_raw_count$K_locus[k_raw_count$n>=4])) + 
   labs(fill="O type", y=NULL, x="O type") + 
-  scale_fill_manual(values=c(`O1.v1`="#009E73", 
-                               `O3/O3a`="#cc3300",
-                               `O2a`="#F0E442",
-                               `O2afg`="#ff8c1a",
-                               `O1.v2`="#0072B2",
+  scale_fill_manual(values=c(`O1⍺β,2⍺`="#009E73", 
+                               `O3⍺/O3β`="#cc3300",
+                               `O2⍺`="#F0E442",
+                               `O2β`="#ff8c1a",
+                               `O1⍺β,2β`="#0072B2",
                              #  `O1 (O1/O2v1)`="#56B4E9",
                                `O4`="#CC79A7",
-                               `O3b`="pink",
+                               `O3𝛾`="pink",
                                `O5`="purple",
                                `O13`="#33cccc",
                                 `other`="black")) +
   theme_bw() + 
-  theme(legend.position="right") +
+  theme(legend.position="right",
+        legend.text = element_text(family = "Arial Unicode MS")) +
   scale_x_continuous(breaks=c(0,0.5,1)) +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank()) + 
   guides(fill = guide_legend(title = "O type", ncol = 1))
@@ -307,19 +309,19 @@ k_raw_bar_O <- data_NNS_sites10 %>%
 ``` {r}
 k_raw_bar_ST + k_raw_bar + ggtitle("a) Crude K frequency") + KL_country_jitterO + ggtitle("b) K distribution by country") + theme(legend.position="none") + k_raw_bar_O + patchwork::plot_layout(widths=c(1,2,4,1))
 
-ggsave(file="figures/AppendixFigS1.1_raw_K_country_O.pdf", width=9, height=11)
 ggsave(file="figures/AppendixFigS1.1_raw_K_country_O.png", width=9, height=11)
+ggsave(file="figures/AppendixFigS1.1_raw_K_country_O.pdf", width=9, height=11, device = cairo_pdf, family = "Arial Unicode MS") # pdf won't render symbols in legend correctly
 ```
 
 
 # Appendix Fig S1.2 - temporal spread of K/O types per site
 ``` {r}
 commonKO <- data_NNS_sites10 %>% 
-  mutate(Clone=paste(ST, K_locus, O_type)) %>% 
+  mutate(Clone=paste(ST, K_locus, O_genotype)) %>% 
   group_by(Clone) %>% count() %>% arrange(-n)
 
-data_NNS_sites10 %>% 
-    mutate(Clone=paste(ST, K_locus, O_type)) %>% 
+clones_site_year <- data_NNS_sites10 %>% 
+    mutate(Clone=paste(ST, K_locus, O_genotype)) %>% 
     mutate(Clone=replace(Clone, !(Clone %in% commonKO$Clone[commonKO$n>15]), "other")) %>%
     mutate(SiteLabel=paste0("Site:", Site)) %>%
     ggplot(aes(x=Year, fill=Clone)) + 
@@ -330,7 +332,11 @@ data_NNS_sites10 %>%
     scale_fill_manual(values=c("lightgrey",unname(alphabet()), "skyblue")) + 
   theme(legend.position="bottom")
 
-ggsave(file="figures/AppendixFigS1.2_clones_site_year.pdf", width=9, height=12)
+clones_site_year
+```
+
+``` {r}
+ggsave(file="figures/AppendixFigS1.2_clones_site_year.pdf", width=9, height=12, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave(file="figures/AppendixFigS1.2_clones_site_year.png", width=9, height=12)
 ```
 
@@ -597,4 +603,5 @@ cumulative_proportion_O <- data_NNS_sites10 %>% filter(O_locus_confidence !="Unt
 data_NNS_sites10 %>% filter(O_locus_confidence !="Untypeable") %>% group_by(O_genotype) %>% count() %>% mutate(p=n/nrow(data_NNS_sites10)) %>% arrange(-p) %>% bind_cols(cummulative=cumulative_proportion_O)
 
 ```
+
 

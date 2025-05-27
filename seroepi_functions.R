@@ -65,14 +65,33 @@ parseModelledEstimates <- function(global_post, region_post, fixOnames=FALSE, me
   # update O names if required
   if (fixOnames) {
     bayes_global_post <- bayes_global_post %>%
-      mutate(locus=replace(locus, locus=="O2a.v1", "O2a")) %>%
-      mutate(locus=replace(locus, locus=="O2afg.v2", "O2afg")) %>%
-      mutate(locus=replace(locus, locus=="OL13", "O13"))
+      mutate(locus=replace(locus, locus=="O1.v1", "O1⍺β,2⍺"))  %>%
+      mutate(locus=replace(locus, locus=="O1.v2", "O1⍺β,2β"))  %>%
+      mutate(locus=replace(locus, locus=="O1.v3", "O1⍺β,2⍺𝛾"))  %>%
+      mutate(locus=replace(locus, locus=="O2a.v1", "O2⍺")) %>%
+      mutate(locus=replace(locus, locus=="O2a.v3", "O2⍺𝛾")) %>%
+      mutate(locus=replace(locus, locus=="O2afg.v2", "O2β")) %>%
+      mutate(locus=replace(locus, locus=="O3/O3a", "O3⍺/O3β")) %>%
+      mutate(locus=replace(locus, locus=="O3b", "O3𝛾")) %>%
+      mutate(locus=replace(locus, locus=="OL13", "O13")) %>%
+      mutate(locus=replace(locus, locus=="OL102", "O14")) %>%
+      mutate(locus=replace(locus, locus=="OL103", "O10")) %>%
+      mutate(locus=replace(locus, locus=="OL104", "O15"))
+
     
     bayes_region_post <- bayes_region_post %>%
-      mutate(locus=replace(locus, locus=="O2a.v1", "O2a")) %>%
-      mutate(locus=replace(locus, locus=="O2afg.v2", "O2afg")) %>%
-      mutate(locus=replace(locus, locus=="OL13", "O13"))
+      mutate(locus=replace(locus, locus=="O1.v1", "O1⍺β,2⍺"))  %>%
+      mutate(locus=replace(locus, locus=="O1.v2", "O1⍺β,2β"))  %>%
+      mutate(locus=replace(locus, locus=="O1.v3", "O1⍺β,2⍺𝛾"))  %>%
+      mutate(locus=replace(locus, locus=="O2a.v1", "O2⍺")) %>%
+      mutate(locus=replace(locus, locus=="O2a.v3", "O2⍺𝛾")) %>%
+      mutate(locus=replace(locus, locus=="O2afg.v2", "O2β")) %>%
+      mutate(locus=replace(locus, locus=="O3/O3a", "O3⍺/O3β")) %>%
+      mutate(locus=replace(locus, locus=="O3b", "O3𝛾")) %>%
+      mutate(locus=replace(locus, locus=="OL13", "O13")) %>%
+      mutate(locus=replace(locus, locus=="OL102", "O14")) %>%
+      mutate(locus=replace(locus, locus=="OL103", "O10")) %>%
+      mutate(locus=replace(locus, locus=="OL104", "O15"))
   }
   
   # get global medians, means and 95% CI; rank by median value

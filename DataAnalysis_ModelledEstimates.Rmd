@@ -17,6 +17,7 @@ library(reshape2)
 library(RColorBrewer)
 library(ggridges)
 library(logistf)
+library(Cairo)
 ```
 
 # Setup
@@ -119,6 +120,8 @@ for (k in kbayes$locus_rank$locus[1:30]) {
 }
 
 logistic_sig <- as_tibble(result, rownames="variable") %>% filter(p<0.05) %>% left_join(kbayes$locus_rank)
+
+logistic_sig %>% filter(p<0.05)
 ```
 
 ``` {r}
@@ -250,7 +253,7 @@ obayes$region_post %>%
 ```
 
 ``` {r}
-ggsave("figures/FigS5_RegionalOBayesDist.pdf", width=6, height=5)
+ggsave("figures/FigS5_RegionalOBayesDist.pdf", width=6, height=5, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave("figures/FigS5_RegionalOBayesDist.png", width=6, height=5)
 ```
 
@@ -261,12 +264,25 @@ ggsave("figures/FigS5_RegionalOBayesDist.png", width=6, height=5)
 # Appendix Fig S1.3 = crude annual K rate per region
 ``` {r}
 
-K_crude_perRegion_perYear <- data_NNS_sites10 %>%
+K_crude_perRegion_perYear <- data_NNS_sites10  %>%
   raw_adj_prop(grouping_vars = c("K_locus", "Region", "Year"), summarise_by = "Region", adj_vars = c("Cluster", "Region", "Year")) 
 
 K_crude_perRegion_perYear <- K_crude_perRegion_perYear %>% group_by(Region, Year) %>% 
   summarise(n=sum(adj_count)) %>% left_join(K_crude_perRegion_perYear) %>%
   mutate(adj_prop = adj_count/n) %>% select(-raw_sum, -adj_sum, -raw_prop, -raw_count)
+
+# numbers for text
+data_NNS_sites10 %>% filter(K_locus=="KL51") %>% group_by(Year, Region) %>% count()
+data_NNS_sites10 %>% filter(K_locus=="KL51") %>% group_by(Region, Site) %>% count()
+data_NNS_sites10 %>% filter(K_locus=="KL51") %>% group_by(Region, Study) %>% count()
+data_NNS_sites10 %>% filter(K_locus=="KL51" & Year>=2018) %>% group_by(Region) %>% count()
+data_NNS_sites10 %>% filter( Year>=2018) %>% group_by(Region) %>% count()
+
+data_NNS_sites10 %>% filter(K_locus=="KL149") %>% group_by(Year, Region) %>% count()
+data_NNS_sites10 %>% filter(K_locus=="KL149") %>% group_by(Region, Site) %>% count()
+data_NNS_sites10 %>% filter(K_locus=="KL149") %>% group_by(Region, Study) %>% count()
+data_NNS_sites10 %>% filter(K_locus=="KL149" & Year %in% c(2019, 2020)) %>% group_by(Region) %>% count()
+data_NNS_sites10 %>% filter(Year %in% c(2019, 2020)) %>% group_by(Region) %>% count()
 
 K_crude_perRegion_perYear %>% 
     left_join(kbayes$locus_rank %>% rename(K_locus=locus)) %>% 
@@ -279,6 +295,8 @@ K_crude_perRegion_perYear %>%
   facet_wrap(~rank+K_locus, scales="free_y") +
     theme(legend.position="bottom") +
   scale_fill_manual(values=region_cols)
+
+
 ```
 
 ``` {r}
@@ -311,7 +329,7 @@ O_crude_perRegion_perYear %>%
 ```
 
 ``` {r}
-ggsave("figures/AppendixFigS1.4_crudeRegionAnnualRateO.pdf", width=6, height=8)
+ggsave("figures/AppendixFigS1.4_crudeRegionAnnualRateO.pdf", width=6, height=8, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave("figures/AppendixFigS1.4_crudeRegionAnnualRateO.png", width=6, height=8)
 ```
 
@@ -319,7 +337,7 @@ ggsave("figures/AppendixFigS1.4_crudeRegionAnnualRateO.png", width=6, height=8)
 # Appendix Figure S1.5 - ST vs KL coloured by region, for top 4 O types
 ``` {r}
 o_region_ST <- data_NNS_sites10 %>%
-  filter(O_genotype %in% c("O2afg", "O4", "O2a", "O13")) %>%
+  filter(O_genotype %in% c("O2β", "O4", "O2⍺", "O13")) %>%
   mutate(Region=fct_relevel(Region, c("Western Africa", "Southern Africa", "Eastern Africa", "Southern Asia"))) %>%
   ggplot(aes(col=Region, x=K_locus, y=ST)) + 
   geom_jitter(alpha=0.5) +
@@ -333,7 +351,7 @@ o_region_ST <- data_NNS_sites10 %>%
 ``` {r}
 o_region_ST
 
-ggsave("figures/AppendixFigS1.5_O_STvsKbyRegion.pdf", width=7, height=9)
+ggsave("figures/AppendixFigS1.5_O_STvsKbyRegion.pdf", width=7, height=9, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave("figures/AppendixFigS1.5_O_STvsKbyRegion.png", width=7, height=9)
 ```
 
@@ -369,7 +387,7 @@ bayes_global_O_raw_vs_adj <- obayes_global %>%
 ( (bayes_global_K_raw_vs_adj + ggtitle("a) K locus (mean estimate)") ) + (bayes_global_O_raw_vs_adj  + ggtitle("b) O type (mean estimate)")) + patchwork::plot_layout(axes="collect") ) / (k_dist_raw_adj + ggtitle ("c) K locus (posterior distribution)") + o_dist_raw_adj + ggtitle ("d) O type (posterior distribution)") + patchwork::plot_layout(guides="collect")) + patchwork::plot_layout(heights=c(1,2)) & theme(legend.position='bottom')
 
 
-ggsave("figures/AppendixFigS2.4_clusterVsRaw.pdf", width=8, height=11)
+ggsave("figures/AppendixFigS2.4_clusterVsRaw.pdf", width=8, height=11, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave("figures/AppendixFigS2.4_clusterVsRaw.png", width=8, height=11)
 ```
 
@@ -426,7 +444,7 @@ K_crude_raw_adj_scatter_KL62 <- K_crude_perSite %>%
 
 # O1v1
 O_crude_raw_adj_scatter_O1v1 <- O_crude_perSite %>% 
-  filter(O_genotype=="O1.v1") %>%
+  filter(O_genotype=="O1⍺β,2⍺") %>%
   ggplot(aes(x=raw_prop, y=adj_prop)) +
   geom_point() + 
   geom_abline(slope=1, intercept=0) +
@@ -435,7 +453,7 @@ O_crude_raw_adj_scatter_O1v1 <- O_crude_perSite %>%
 
 # O1v2
 O_crude_raw_adj_scatter_O1v2 <- O_crude_perSite %>% 
-  filter(O_genotype=="O1.v2") %>%
+  filter(O_genotype=="O1⍺β,2β") %>%
   ggplot(aes(x=raw_prop, y=adj_prop)) +
   geom_point() + 
   geom_abline(slope=1, intercept=0) +
@@ -444,7 +462,7 @@ O_crude_raw_adj_scatter_O1v2 <- O_crude_perSite %>%
 
 # O2afg
 O_crude_raw_adj_scatter_O2afg <- O_crude_perSite %>% 
-  filter(O_genotype=="O2afg") %>%
+  filter(O_genotype=="O2β") %>%
   ggplot(aes(x=raw_prop, y=adj_prop)) +
   geom_point() + 
   geom_abline(slope=1, intercept=0) +
@@ -464,9 +482,9 @@ O_crude_raw_adj_scatter_O4 <- O_crude_perSite %>%
 
 # Appendix Fig S2.3 - Effect of cluster adjustment on crude proportion
 ``` {r}
-(K_crude_raw_adj_scatter_KL102 + ggtitle("a) KL102, per-site") + K_crude_raw_adj_scatter_KL2 + ggtitle("b) KL2, per-site")) / (K_crude_raw_adj_scatter_KL25 + ggtitle("c) KL25, per-site") + K_crude_raw_adj_scatter_KL62 + ggtitle("d) KL62, per-site")) / (O_crude_raw_adj_scatter_O1v1 + ggtitle("e) O1v1, per-site") + O_crude_raw_adj_scatter_O1v2 + ggtitle("f) O1v2, per-site")) / (O_crude_raw_adj_scatter_O2afg + ggtitle("g) O2afg, per-site") + O_crude_raw_adj_scatter_O4 + ggtitle("h) O4, per-site"))
+(K_crude_raw_adj_scatter_KL102 + ggtitle("a) KL102, per-site") + K_crude_raw_adj_scatter_KL2 + ggtitle("b) KL2, per-site")) / (K_crude_raw_adj_scatter_KL25 + ggtitle("c) KL25, per-site") + K_crude_raw_adj_scatter_KL62 + ggtitle("d) KL62, per-site")) / (O_crude_raw_adj_scatter_O1v1 + ggtitle("e) O1⍺β,2⍺, per-site") + O_crude_raw_adj_scatter_O1v2 + ggtitle("f) O1⍺β,2β, per-site")) / (O_crude_raw_adj_scatter_O2afg + ggtitle("g) O2β, per-site") + O_crude_raw_adj_scatter_O4 + ggtitle("h) O4, per-site"))
 
-ggsave("figures/AppendixFigS2.3_EffectClusteringCrude.pdf", width=8, height=10)
+ggsave("figures/AppendixFigS2.3_EffectClusteringCrude.pdf", width=8, height=10, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave("figures/AppendixFigS2.3_EffectClusteringCrude.png", width=8, height=10)
 ```
 
@@ -778,7 +796,7 @@ ggsave("figures/FigS4_KcoverageRaw_top20PerRegion.png", width=8, height=8)
 # numbers for text - K coverage
 ``` {r}
 # coverage of top-20
-kbayes_raw_coverage %>% filter(rank %in% c(5,10,15,20) & subgroup=="Global") %>% select(mean, lower, upper)
+kbayes_raw_coverage %>% filter(rank %in% c(3,5,10,15,20) & subgroup=="Global") %>% select(mean, lower, upper) %>% mutate(rank=c(3,5,10,15,20))
 
 kbayes_raw_coverage %>% filter(rank==10 & subgroup=="Global") %>% select(mean, lower, upper) - (kbayes_raw_coverage %>% filter(rank==5 & subgroup=="Global") %>% select(mean, lower, upper))
 
@@ -859,7 +877,7 @@ o_coverage_globalTop10_subgroups
 ``` {r}
 (o_prev_global_dist + o_prev_region_heatmap) / (o_coverage_globalTop10_subgroups + ggtitle("c) Global coverage") + ocoverage_globalTop10_globalRegional + ggtitle("d) Regional coverage") + patchwork::plot_layout(guides="collect"))
 
-ggsave("figures/Fig4_O_prevAdj_coverageRaw.pdf", width=8, height=8)
+ggsave("figures/Fig4_O_prevAdj_coverageRaw.pdf", width=8, height=8, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave("figures/Fig4_O_prevAdj_coverageRaw.png", width=8, height=8)
 ```
 
@@ -870,6 +888,13 @@ ggsave("figures/Fig4_O_prevAdj_coverageRaw.png", width=8, height=8)
 obayes$global_est
 
 obayes$region_est
+
+obayes$region_est %>% filter(locus=="O2afg")
+obayes$region_est %>% filter(locus=="O2a")
+obayes$region_est %>% filter(locus=="O4")
+obayes$region_est %>% filter(locus=="O5")
+obayes$region_est %>% filter(locus=="O3b")
+obayes$region_est %>% filter(locus=="OL13")
 
 # coverage
 obayes_raw_coverage
@@ -1044,9 +1069,18 @@ loo_O <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_SPINZ_global_estimates.cs
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo) %>%
-  mutate(locus=replace(locus, locus=="O2a.v1", "O2a")) %>%
-  mutate(locus=replace(locus, locus=="O2afg.v2", "O2afg")) %>%
-  mutate(locus=replace(locus, locus=="OL13", "O13"))
+  mutate(locus=replace(locus, locus=="O1.v1", "O1⍺β,2⍺"))  %>%
+      mutate(locus=replace(locus, locus=="O1.v2", "O1⍺β,2β"))  %>%
+      mutate(locus=replace(locus, locus=="O1.v3", "O1⍺β,2⍺𝛾"))  %>%
+      mutate(locus=replace(locus, locus=="O2a.v1", "O2⍺")) %>%
+      mutate(locus=replace(locus, locus=="O2a.v3", "O2⍺𝛾")) %>%
+      mutate(locus=replace(locus, locus=="O2afg.v2", "O2β")) %>%
+      mutate(locus=replace(locus, locus=="O3/O3a", "O3⍺/O3β")) %>%
+      mutate(locus=replace(locus, locus=="O3b", "O3𝛾")) %>%
+      mutate(locus=replace(locus, locus=="OL13", "O13")) %>%
+      mutate(locus=replace(locus, locus=="OL102", "O14")) %>%
+      mutate(locus=replace(locus, locus=="OL103", "O10")) %>%
+      mutate(locus=replace(locus, locus=="OL104", "O15"))
 
 ```
 
@@ -1302,7 +1336,7 @@ loo_o_coverage_plot <- loo_o_coverage %>%
 ``` {r}
 loo_O_plot / loo_o_coverage_plot + plot_layout(heights=c(2,1), axes="collect")
 
-ggsave(file="figures/AppendixFigS2.2_LOO_BayesGlobal_Olocus.pdf", width=9, height=9)
+ggsave(file="figures/AppendixFigS2.2_LOO_BayesGlobal_Olocus.pdf", width=9, height=9, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave(file="figures/AppendixFigS2.2_LOO_BayesGlobal_Olocus.png", width=9, height=9)
 
 ```
@@ -1379,6 +1413,6 @@ timeThreshold_estimates_adj_o + timeThreshold_ranks_adj_o
 ``` {r}
 (timeThreshold_ranks_adj + timeThreshold_ranks_adj_o) / (timeThreshold_estimates_adj + timeThreshold_estimates_adj_o) / (k_dist_28_365 + o_dist_28_365 + patchwork::plot_layout(guides="collect")) + patchwork::plot_layout(heights=c(1,1,2)) & theme(legend.position='bottom')
 
-ggsave("figures/AppendixFigS2.5_temporalThresholdModelled.pdf", width=8, height=10)
+ggsave("figures/AppendixFigS2.5_temporalThresholdModelled.pdf", width=8, height=10, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave("figures/AppendixFigS2.5_temporalThresholdModelled.png", width=8, height=10)
 ```

@@ -13,6 +13,7 @@ library(ggplot2)
 library(tidyverse)
 library(dplyr)
 library(patchwork)
+library(Cairo)
 ```
 
 # Setup
@@ -30,7 +31,7 @@ region_cols <- c(`Southern Asia` ="#D81B60", `Western Africa`="#1E88E5", `Easter
 
 
 ``` {r}
-data_long <- read_csv("tables/longitudinal_data.csv")
+data_long <- read_tsv("tables/longitudinal_data.tsv")
 
 # distribution of longitudinal data for analysis
 timeline_plot_longData <- data_long %>% 
@@ -72,6 +73,10 @@ long_globalRank_kenyaCov <- coverageAnalysis(prepCoverageData(data_long_post2017
 
 long_globalRank_bdCov <- coverageAnalysis(prepCoverageData(data_long_post2017 %>% filter(Country=="Bangladesh")), ranks=global_thru2017_ranks, maxRank=20)
 
+long_cov$cov_table %>% filter(rank==20)
+long_globalRank_mlwCov$cov_table %>% filter(rank==20)
+long_globalRank_kenyaCov$cov_table %>% filter(rank==20)
+long_globalRank_bdCov$cov_table %>% filter(rank==20)
 
 
 # coverage in training
@@ -138,6 +143,10 @@ long_globalRank_kenyaCov_O <- coverageAnalysis(prepCoverageDataO(data_long_post2
 
 long_globalRank_bdCov_O <- coverageAnalysis(prepCoverageDataO(data_long_post2017 %>% filter(Country=="Bangladesh")), ranks=global_thru2017_ranks_O, maxRank=10)
 
+long_cov_O$cov_table %>% filter(rank==5)
+long_globalRank_mlwCov_O$cov_table %>% filter(rank==5)
+long_globalRank_kenyaCov_O$cov_table %>% filter(rank==5)
+long_globalRank_bdCov_O$cov_table %>% filter(rank==5)
 
 
 # coverage in training
@@ -191,7 +200,7 @@ coverage_plot_longPre_globalRank_country_O <- longIn_cov$cov_table_long %>% muta
 ``` {r}
 timeline_plot_longData / (coverage_plot_longPre_globalRank_country + ggtitle("K coverage, Training period") + coverage_plot_long_globalRank_country + ggtitle("K coverage, Post-training period") + patchwork::plot_layout(guides="collect")) / (coverage_plot_long_globalRank_country_O + ggtitle("O coverage, Training period") + coverage_plot_longPre_globalRank_country_O + ggtitle("O coverage, Post-training period") + patchwork::plot_layout(guides="collect")) +plot_layout(heights=c(3,2,2))
 
-ggsave("figures/FigS6_Longitudinal.pdf", height=9, width=8)
+ggsave("figures/FigS6_Longitudinal.pdf", height=9, width=8, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave("figures/FigS6_Longitudinal.png", height=9, width=8)
 ```
 
