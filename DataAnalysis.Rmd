@@ -34,7 +34,8 @@ region_cols <- c(`Southern Asia` ="#D81B60", `Western Africa`="#1E88E5", `Easter
 
 ## load data on included samples - Table S3 (includes alternative clusters)
 ``` {r}
-data_NNS_sites10 <- read_tsv("tables/TableS3_IsolatesIncluded_NEEDSACCESSIONS.tsv")
+data_NNS_sites10 <- read_tsv("tables/TableS3_IsolatesIncluded_NEEDSACCESSIONS.tsv") %>%
+  mutate(Study=if_else(Study=="GBS", "GBS-COP", Study))
 ```
 
 ## write out O genotype definitions for Appendix Table S1.6

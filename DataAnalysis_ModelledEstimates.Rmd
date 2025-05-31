@@ -36,7 +36,8 @@ group_cols <- c(All="black", Fatal ="#D81B60", ESBL="#1E88E5", CP="#FFC107")
 
 ## load data on included samples - Table S3
 ``` {r}
-data_NNS_sites10 <- read_tsv("tables/TableS3_IsolatesIncluded_NEEDSACCESSIONS.tsv")
+data_NNS_sites10 <- read_tsv("tables/TableS3_IsolatesIncluded_NEEDSACCESSIONS.tsv") %>%
+  mutate(Study=if_else(Study=="GBS", "GBS-COP", Study))
 ```
 
 
@@ -830,7 +831,7 @@ k_rank_region8 %>% left_join(kbayes$locus, by="locus") %>% filter(rank.y>20)
 obayes_raw_coverage <- getCumulativeCoverageGlobalRegional(obayes_raw, obayes$locus_rank) %>%
   mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
 
-ocoverage_globalTop10_globalRegional <- plotCoverage(obayes_raw_coverage, obayes$locus_rank, maxRank=10, xintercept=c(5,10), cols=region_cols, col_title = "d) Region")
+ocoverage_globalTop10_globalRegional <- plotCoverage(obayes_raw_coverage, obayes$locus_rank, maxRank=10, xintercept=c(4,8), cols=region_cols, col_title = "d) Region")
 
 ocoverage_globalTop10_globalRegional
 
@@ -909,9 +910,9 @@ data_NNS_sites10 %>% filter(Region=="Southern Asia" & O_genotype=="O2a") %>% gro
 data_NNS_sites10 %>% filter(Region=="Southern Africa" & O_genotype=="O5") %>% group_by(ST, K_locus)%>% count()
 data_NNS_sites10 %>% filter(Region=="Southern Africa" & O_genotype=="O5") %>% group_by(ST, K_locus, Site, Country)%>% count()
 
-# top-5 coverage
-obayes_raw_coverage %>% filter(rank==5)
-obayes_raw_coverage_subgroups %>% filter(rank==5)
+# top-4 coverage
+obayes_raw_coverage %>% filter(rank==4)
+obayes_raw_coverage_subgroups %>% filter(rank==4)
 ```
 
 
@@ -992,79 +993,79 @@ k_rank_region8 %>% left_join(kbayes$locus, by="locus") %>% filter(rank.y>20)
 ``` {r loo_O}
 loo <- obayes$global_est %>% mutate(Study="None")
 
-loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_AKU_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_AKU_global_estimates.csv") %>% 
   mutate(Study="AKU") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_BabyGERMS_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_BabyGERMS_global_estimates.csv") %>% 
   mutate(Study="BabyGERMS") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_BARNARDS_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_BARNARDS_global_estimates.csv") %>% 
   mutate(Study="BARNARDS") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_Botswana_global_estimates.csv") %>% 
-  mutate(Study="NIMBIplus") %>% 
-  arrange(-mean) %>%
-  mutate(rank = min_rank(desc(mean))) %>% 
-  bind_rows(loo)
-
-loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_CHRF_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_CHRF_global_estimates.csv") %>% 
   mutate(Study="CHRF") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_AIIMS_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_AIIMS_global_estimates.csv") %>% 
   mutate(Study="DH") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_GBS_global_estimates.csv") %>% 
-  mutate(Study="GBSCOP") %>% 
+loo <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_GBS_global_estimates.csv") %>% 
+  mutate(Study="GBS-COP") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_Kilifi_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_Kilifi_global_estimates.csv") %>% 
   mutate(Study="Kilifi") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_MBIRA_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_MBIRA_global_estimates.csv") %>% 
   mutate(Study="MBIRA") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_MLW_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_MLW_global_estimates.csv") %>% 
   mutate(Study="MLW") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_NeoBAC_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_Botswana_global_estimates.csv") %>% 
+  mutate(Study="NIMBIplus") %>% 
+  arrange(-mean) %>%
+  mutate(rank = min_rank(desc(mean))) %>% 
+  bind_rows(loo)
+
+loo <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_NeoBAC_global_estimates.csv") %>% 
   mutate(Study="NeoBAC") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_NeoOBS_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_NeoOBS_global_estimates.csv") %>% 
   mutate(Study="NeoOBS-India") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo_O <- read_csv("outputs_LOO/O_Full_min10_adj_28_LOO_SPINZ_global_estimates.csv") %>% 
+loo_O <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_SPINZ_global_estimates.csv") %>% 
   mutate(Study="SPINZ") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
@@ -1110,79 +1111,80 @@ loo_O_plot <- loo_O %>%
 ``` {r loo_k}
 loo <- kbayes$global_est %>% mutate(Study="None")
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_AKU_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_AKU_global_estimates.csv") %>% 
   mutate(Study="AKU") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_BabyGERMS_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_BabyGERMS_global_estimates.csv") %>% 
   mutate(Study="BabyGERMS") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_BARNARDS_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_BARNARDS_global_estimates.csv") %>% 
   mutate(Study="BARNARDS") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_Botswana_global_estimates.csv") %>% 
-  mutate(Study="NIMBIplus") %>% 
-  arrange(-mean) %>%
-  mutate(rank = min_rank(desc(mean))) %>% 
-  bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_CHRF_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_CHRF_global_estimates.csv") %>% 
   mutate(Study="CHRF") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_AIIMS_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_AIIMS_global_estimates.csv") %>% 
   mutate(Study="DH") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_GBS_global_estimates.csv") %>% 
-  mutate(Study="GBSCOP") %>% 
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_GBS_global_estimates.csv") %>% 
+  mutate(Study="GBS-COP") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_Kilifi_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_Kilifi_global_estimates.csv") %>% 
   mutate(Study="Kilifi") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_MBIRA_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_MBIRA_global_estimates.csv") %>% 
   mutate(Study="MBIRA") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_MLW_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_MLW_global_estimates.csv") %>% 
   mutate(Study="MLW") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_NeoBAC_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_Botswana_global_estimates.csv") %>% 
+  mutate(Study="NIMBIplus") %>% 
+  arrange(-mean) %>%
+  mutate(rank = min_rank(desc(mean))) %>% 
+  bind_rows(loo)
+
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_NeoBAC_global_estimates.csv") %>% 
   mutate(Study="NeoBAC") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_NeoOBS_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_NeoOBS_global_estimates.csv") %>% 
   mutate(Study="NeoOBS-India") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
   bind_rows(loo)
 
-loo <- read_csv("outputs_LOO/K_Full_min10_adj_28_LOO_SPINZ_global_estimates.csv") %>% 
+loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_SPINZ_global_estimates.csv") %>% 
   mutate(Study="SPINZ") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
@@ -1223,9 +1225,9 @@ loo_k_ranks <- loo %>%
 # LOO - K coverage 
 ``` {r loo_k_coverage}
 studies <- unique(data_NNS_sites10$Study)
-studies[c(2,8,12)]
-studies <- studies[-c(2,8,12)]
-studies <- c(studies, c("AIIMS", "NeoOBS", "Botswana")) # filenames
+studies[c(2,7,8,12)]
+studies <- studies[-c(2,7,8,12)]
+studies <- c(studies, c("AIIMS", "NeoOBS", "Botswana","GBS")) # filenames
 
 loo_k_coverage <- tibble(
     rank = integer(0),
@@ -1241,7 +1243,7 @@ loo_k_coverage <- tibble(
 for (study in studies) {
 
 # read raw Bayesian estimates for K
-loo_kbayes_raw <- parseModelledEstimates(global_post=paste0("outputs_LOO/K_Full_min10_raw_28_LOO_",study,"_posterior_global.csv.gz"), region_post=paste0("outputs_LOO/K_Full_min10_raw_28_LOO_",study,"_posterior_subgroup.csv.gz"))
+loo_kbayes_raw <- parseModelledEstimates(global_post=paste0("outputs_LOO/K_Full_ALL_raw_28_LOO_",study,"_posterior_global.csv.gz"), region_post=paste0("outputs_LOO/K_Full_ALL_raw_28_LOO_",study,"_posterior_subgroup.csv.gz"))
 
 this_coverage <- getCumulativeCoverageGlobalRegional(loo_kbayes_raw, kbayes$locus_rank) %>%
   mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa"))) %>%
@@ -1256,13 +1258,13 @@ loo_k_coverage_plot <- loo_k_coverage %>%
   filter(rank==20) %>% 
   mutate(Study=if_else(Study=="NeoOBS", "NeoOBS-India", Study)) %>%
   mutate(Study=if_else(Study=="AIIMS", "DH", Study)) %>%
-  mutate(Study=if_else(Study=="GBS", "GBSCOP", Study)) %>%
+  mutate(Study=if_else(Study=="GBS", "GBS-COP", Study)) %>%
   mutate(Study=if_else(Study=="Botswana", "NIMBIplus", Study)) %>%
   ggplot(aes(x=Study, y=subgroup, fill=mean)) + 
     geom_tile() + 
     geom_text(aes(y=subgroup, x=Study, label=round(100*mean, 2)), size=3) +
     scale_x_discrete(limits=rev(unique(loo$Study))) + 
-    scale_fill_gradient(low="white", high="grey") +
+    scale_fill_gradient(low="#C6DBEF", high="#6BAED6") +
     theme_bw() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, 
                                      colour = "black"), 
@@ -1297,7 +1299,7 @@ loo_o_coverage <- tibble(
 for (study in studies) {
 
 # read raw Bayesian estimates for K
-loo_obayes_raw <- parseModelledEstimates(global_post=paste0("outputs_LOO/O_Full_min10_raw_28_LOO_",study,"_posterior_global.csv.gz"), region_post=paste0("outputs_LOO/O_Full_min10_raw_28_LOO_",study,"_posterior_subgroup.csv.gz"), fixOnames = T)
+loo_obayes_raw <- parseModelledEstimates(global_post=paste0("outputs_LOO/O_Full_ALL_raw_28_LOO_",study,"_posterior_global.csv.gz"), region_post=paste0("outputs_LOO/O_Full_ALL_raw_28_LOO_",study,"_posterior_subgroup.csv.gz"), fixOnames = T)
 
 this_coverage <- getCumulativeCoverageGlobalRegional(loo_obayes_raw, obayes$locus_rank) %>%
   mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa"))) %>%
@@ -1308,20 +1310,44 @@ loo_o_coverage <- bind_rows(loo_o_coverage, this_coverage)
 
 ```
 
-``` {r loo_o_coverage_plot}
-loo_o_coverage_plot <- loo_o_coverage %>% 
+``` {r loo_o_coverage_plot4}
+loo_o_coverage_plot4 <- loo_o_coverage %>% 
   mutate(subgroup=fct_relevel(subgroup,rev(c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))) %>%
   bind_rows(obayes_raw_coverage %>% mutate(Study="None")) %>% 
-  filter(rank==5) %>% 
+  filter(rank==4) %>% 
   mutate(Study=if_else(Study=="NeoOBS", "NeoOBS-India", Study)) %>%
   mutate(Study=if_else(Study=="AIIMS", "DH", Study)) %>%
-  mutate(Study=if_else(Study=="GBS", "GBSCOP", Study)) %>%
+  mutate(Study=if_else(Study=="GBS", "GBS-COP", Study)) %>%
   mutate(Study=if_else(Study=="Botswana", "NIMBIplus", Study)) %>%
   ggplot(aes(x=Study, y=subgroup, fill=mean)) + 
     geom_tile() + 
     geom_text(aes(y=subgroup, x=Study, label=round(100*mean, 2)), size=3) +
     scale_x_discrete(limits=rev(unique(loo$Study))) + 
-    scale_fill_gradient(low="lightgrey", high="darkgrey") +
+    scale_fill_gradient(low="#C6DBEF", high="#6BAED6") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, 
+                                     colour = "black"), 
+          axis.title = element_text(size = 10, colour = "black"),
+          axis.text.y = element_text(size = 10, colour = "black"),
+          plot.title = element_text(hjust=0.5),
+          legend.position = "right") +
+    labs(y="", x="Excluded study", fill="Coverage")
+```
+
+``` {r loo_o_coverage_plot5}
+loo_o_coverage_plot5 <- loo_o_coverage %>% 
+  mutate(subgroup=fct_relevel(subgroup,rev(c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))) %>%
+  bind_rows(obayes_raw_coverage %>% mutate(Study="None")) %>% 
+  filter(rank==5) %>% 
+  mutate(Study=if_else(Study=="NeoOBS", "NeoOBS-India", Study)) %>%
+  mutate(Study=if_else(Study=="AIIMS", "DH", Study)) %>%
+  mutate(Study=if_else(Study=="GBS", "GBS-COP", Study)) %>%
+  mutate(Study=if_else(Study=="Botswana", "NIMBIplus", Study)) %>%
+  ggplot(aes(x=Study, y=subgroup, fill=mean)) + 
+    geom_tile() + 
+    geom_text(aes(y=subgroup, x=Study, label=round(100*mean, 2)), size=3) +
+    scale_x_discrete(limits=rev(unique(loo$Study))) + 
+    scale_fill_gradient(low="#C6DBEF", high="#6BAED6") +
     theme_bw() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, 
                                      colour = "black"), 
@@ -1334,10 +1360,10 @@ loo_o_coverage_plot <- loo_o_coverage %>%
 
 # Appendix Fig S2.2
 ``` {r}
-loo_O_plot / loo_o_coverage_plot + plot_layout(heights=c(2,1), axes="collect")
+loo_O_plot / (loo_o_coverage_plot4 + ggtitle(label="Coverage of top-4")) / (loo_o_coverage_plot5 + ggtitle(label="Coverage of top-5")) + plot_layout(heights=c(2,1,1), axes="collect")
 
-ggsave(file="figures/AppendixFigS2.2_LOO_BayesGlobal_Olocus.pdf", width=9, height=9, device = cairo_pdf, family = "Arial Unicode MS")
-ggsave(file="figures/AppendixFigS2.2_LOO_BayesGlobal_Olocus.png", width=9, height=9)
+ggsave(file="figures/AppendixFigS2.2_LOO_BayesGlobal_Olocus.pdf", width=9, height=11, device = cairo_pdf, family = "Arial Unicode MS")
+ggsave(file="figures/AppendixFigS2.2_LOO_BayesGlobal_Olocus.png", width=9, height=11)
 
 ```
 
