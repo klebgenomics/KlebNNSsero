@@ -243,7 +243,7 @@ KL_country_jitterO <- data_NNS_sites10 %>%
   labs(col="O type", y=NULL) +
   theme(axis.text.x = element_text(angle=45, hjust=1, size=10), 
         axis.text.y=element_text(size=10)) +
-  scale_fill_manual(values=c(`O1⍺β,2⍺`="#009E73", 
+  scale_colour_manual(values=c(`O1⍺β,2⍺`="#009E73", 
                                `O3⍺/O3β`="#cc3300",
                                `O2⍺`="#F0E442",
                                `O2β`="#ff8c1a",
