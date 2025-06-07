@@ -70,7 +70,7 @@ timeline_barplot + patchwork::plot_annotation(title="a")
 
 # Fig 1b - map of study sites
 ```{r }
-se_site_coords <- read_csv("tables/site_coordinates.csv", show_col_types=F) 
+se_site_coords <- read_csv("tables/site_codes_coords.csv", show_col_types=F) %>% rename(Site=SiteCode)
 
 se_country_count <- data_NNS_sites10 %>% 
     mutate(Study_Site=paste0(Study, "_", Site)) %>%
