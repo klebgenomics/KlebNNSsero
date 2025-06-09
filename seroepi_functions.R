@@ -393,7 +393,7 @@ filterData <- function(data, studies=studies, years=years) {
   return(list(filtered=data_NNS_sites10, qc=data_NNS_qc, sites_n10=sites_n10, data_NNS=data_NNS))
 }
 
-coverageAnalysis <- function(global_prevalence, ranks=bayes_global_K_adjRanks, maxRank=30, labelK=T) {
+coverageAnalysis <- function(global_prevalence, ranks=bayes_global_K_adjRanks, maxRank=30, labelK=TRUE, ci=TRUE) {
   
   cov_table <- global_prevalence %>% left_join(ranks) %>% 
     arrange(rank) %>% 
@@ -422,18 +422,17 @@ coverageAnalysis <- function(global_prevalence, ranks=bayes_global_K_adjRanks, m
     mutate(type=fct_relevel(type, c("raw", "adj"))) %>%
     ggplot(aes(x=rank, y=cov*100, group=type)) +
     geom_line(aes(linetype=type, col=type)) + 
-    geom_ribbon(aes(ymin=lower*100, ymax=upper*100, fill=type), alpha=0.1, linetype=0) +
+    #geom_ribbon(aes(ymin=lower*100, ymax=upper*100, fill=type), alpha=0.1, linetype=0) +
     theme_bw() +
     ylim(0,100) + 
     labs(x=NULL, y="Cumulative coverage (%)", fill="", colour="", linetype="") +
     theme(axis.text.x = element_text(angle=90))
+    
+  if (ci) {
+  	cov_plot <- cov_plot + geom_ribbon(aes(ymin=lower*100, ymax=upper*100, fill=type), alpha=0.1, linetype=0)
+  }
   
   if (labelK) {
-    #Klist <- cov_table$locus
-    #names(Klist) <- cov_table$rank
-    #Klist <- Klist[as.character(1:maxRank)]
-    #names(Klist) <- 1:maxRank
-    #cov_plot <- cov_plot + scale_x_continuous(breaks=seq(1,nrow(cov_table)), labels=cov_table$locus)
     cov_plot <- cov_plot + scale_x_continuous(breaks=seq(1,maxRank), labels=ranks$locus[1:maxRank])
   }
   
