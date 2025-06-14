@@ -583,7 +583,8 @@ kbayes_esbl_raw_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_rank
 
 ## CP - read posterior estimates for adjusted counts (main) and raw counts (for comparison)
 ``` {r}
-kbayes_cp_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/K_Carba_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/K_Carba_min10_raw_28_posterior_subgroup.csv.gz")
+
+kbayes_cp_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/K_Carba_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/K_Carba_min10_raw_28_posterior_subgroup.csv.bz2")
 
 kbayes_cp_raw_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_rank, kbayes_cp_raw_min10perSite$global_post) %>% mutate(type="min10")
 ```
