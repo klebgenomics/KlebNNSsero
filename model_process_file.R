@@ -12,8 +12,8 @@ library(tidyr)
 library(brms)
 
 
-all_files <- list.files(path = "data_core/", recursive = TRUE) # or 'data_LOO/'
-all_files <- all_files[all_files != "site_info.csv"]
+all_files <- list.files(path = "data_LOO/", recursive = TRUE) # or 'data_LOO/'
+all_files <- all_files[all_files != "site_info_250529.csv"]
 print(all_files)
 
 pattern <- "^(Full|Carba|ESBL|Fatal)_(ALL|min10)_Neonatal_shareable_\\d{8}_(28|365)_filterN10_(K|O|OlocusType)_site_counts_all\\.csv$"
@@ -31,7 +31,14 @@ if (length(bad_files) > 0) {
 
 
 ## PLACEHOLDER TO TEST
-all_files <- all_files[13:14]
+#all_files <- all_files[1]
+unique_studies <- c("NeoOBS","AIIMS", "MBIRA")
+# Extract whatever lies between “LOO_” and “.csv”
+study_names <- sub(".*LOO_(.*)\\.csv$", "\\1", all_files)
+
+# Keep only those whose extracted name is in unique_studies
+selected_files <- all_files[study_names %in% unique_studies]
+all_files <- selected_files
 
 # Loop over each file in all_files
 for(i in seq_along(all_files)) {
@@ -74,7 +81,7 @@ for(i in seq_along(all_files)) {
     ## Load the data and process to obtain data_csv -----------
     # Read the prevalence data file and the site information file
     site_prevalence <- read.csv(paste0("data_", purpose, "/", filename))
-    site_data     <- read.csv(paste0("data_", purpose, "/", "site_info.csv"))
+    site_data     <- read.csv(paste0("data_", purpose, "/", "site_info_250529.csv"))
     
     # Create unique site-to-region mapping from the prevalence data
     site_info <- site_prevalence %>%

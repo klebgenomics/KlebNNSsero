@@ -20,8 +20,8 @@ library(tidyverse)
 # Part A:
 
 
-all_files <- list.files(path = "data_core/", recursive = TRUE) # or "data_LOO/"
-all_files <- all_files[all_files != "site_info.csv"]
+all_files <- list.files(path = "data_LOO/", recursive = TRUE) # or "data_LOO/"
+all_files <- all_files[all_files != "site_info_250529.csv"]
 print(all_files)
 
 pattern <- "^(Full|Carba|ESBL|Fatal)_(ALL|min10)_Neonatal_shareable_\\d{8}_(28|365)_filterN10_(K|O|OlocusType)_site_counts_all\\.csv$"
@@ -38,8 +38,16 @@ if (length(bad_files) > 0) {
 }
 
 
+unique_studies <- c("NeoOBS","AIIMS", "MBIRA")
+# Extract whatever lies between “LOO_” and “.csv”
+study_names <- sub(".*LOO_(.*)\\.csv$", "\\1", all_files)
+
+# Keep only those whose extracted name is in unique_studies
+selected_files <- all_files[study_names %in% unique_studies]
+
+
 ## PLACEHOLDER TO TEST
-all_files <- all_files[1]
+all_files <- selected_files
 
 for(i in 1:length(all_files)){
   
@@ -68,7 +76,7 @@ for(i in 1:length(all_files)){
   site_prevalence <- read.csv(paste("data_",purpose,"/",filename, sep=""))
 
   # Load datasets
-  site_data <- read.csv(paste("data_",purpose,"/","site_info.csv", sep=""))
+  site_data <- read.csv(paste("data_",purpose,"/","site_info_250529.csv", sep=""))
   
   # Ensure site_info has unique site-region mapping only
   site_info <- site_prevalence %>%
@@ -153,9 +161,9 @@ for(i in 1:length(all_files)){
     
     # Check model:
     
-    max(rhat(fit_with_interaction))
-    min(neff_ratio(fit_with_interaction))
-    pp_check(fit_with_interaction,type = "stat_2d")
+    print(max(rhat(fit_with_interaction)))
+    print(min(neff_ratio(fit_with_interaction)))
+    #pp_check(fit_with_interaction,type = "stat_2d")
     
     # Save model:
     
