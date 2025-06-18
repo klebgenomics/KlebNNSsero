@@ -3,7 +3,7 @@ library(stringr)
 library(tidyr)
 library(brms)
 
-all_files <- list.files(path = "data_paper/", recursive = TRUE)
+all_files <- list.files(path = "data_loo/", recursive = TRUE)
 all_files <- all_files[all_files != "site_info.csv"]
 
 pattern <- "^(Full|Carba|ESBL|Fatal)_(ALL|min10)_Neonatal_shareable_\\d{8}_(28|365)_filterN10_(K|O|OlocusType)_site_counts_all\\.csv$"
@@ -16,7 +16,7 @@ if (length(bad_files) > 0) {
 }
 
 # Placeholder to test a subset of files
-#all_files <- all_files[c(1,3)]
+#all_files <- all_files[1]
 
 # Initialize results table
 results_table <- data.frame(
@@ -30,7 +30,7 @@ results_table <- data.frame(
 for (i in seq_along(all_files)) {
   filename <- all_files[i]
   subset <- str_extract(filename, "^(Full|Carba|ESBL|Fatal)")
-  purpose <- "paper"
+  purpose <- "LOO"
   date_stamp <- str_extract(filename, "\\d{8}")
   days <- str_extract(filename, "_(28|365)_") %>% str_replace_all("_", "")
   what_data <- str_extract(filename, "ALL|min10")
@@ -61,6 +61,7 @@ for (i in seq_along(all_files)) {
     
     results_table <- rbind(results_table, data.frame(
       model = model_filename,
+      study = study,
       max_rhat = max_rhat,
       min_neff_ratio = min_neff_ratio,
       divergent_transitions = divergent_transitions,
@@ -73,7 +74,7 @@ for (i in seq_along(all_files)) {
 print(results_table)
 
 
-write.csv(results_table, "results_table.csv")
+#write.csv(results_table, "diagnostics_loo.csv")
 
 library(dplyr)
 library(stringr)
@@ -87,10 +88,10 @@ results_table_new <- results_table %>%
     what_data  = str_extract(model, "ALL|min10"),
     antigen    = str_extract(model, "^(K|O)")                     # Extracts a leading K or O
   ) %>%
-  select(subset, type, days, what_data, antigen,
+  select(subset, study, type, days, what_data, antigen,
          max_rhat, min_neff_ratio)
 
 print(results_table_new)
-write.csv(results_table_new, "results_table.csv")
+write.csv(results_table_new, "loo_diagnostics.csv")
 
  
