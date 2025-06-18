@@ -466,6 +466,46 @@ plotCoverage <- function(coverage, ranks, maxRank=20, y_title="Cumulative covera
   return(plot)
 }
 
+plotCoverageRawAdj <- function(coverage_raw, coverage_adj, ranks, maxRank=20, y_title="Cumulative coverage (%)", alpha=0.05, xintercept=c(5,10,15,20), cols=region_cols, col_title="", linetype_title="") {
+  
+  coverage_raw <- coverage_raw %>% 
+    mutate(type="raw") %>% 
+    mutate(linewidth=1) %>% 
+    mutate(upper=if_else(upper>1,1,upper)) %>%
+    filter(rank <= maxRank)
+  
+  coverage_adj <- coverage_adj %>% mutate(type="cluster-adjusted") %>% 
+    mutate(upper=if_else(upper>1,1,upper)) %>%
+    mutate(linewidth=0.5) %>% 
+    filter(rank <= maxRank)
+
+  plot <- bind_rows(coverage_raw, coverage_adj) %>%
+    mutate(type=fct_relevel(type, "raw", "cluster-adjusted")) %>%
+    ggplot(aes(col=subgroup, x=rank, y=mean*100, group=subgroup)) +
+    geom_hline(yintercept=70, linetype=2) + 
+    geom_vline(xintercept=xintercept, col="grey") +
+    geom_vline(xintercept=xintercept, col="grey") +
+    geom_line(aes(color = subgroup, linetype = type, group = interaction(subgroup, type), size=factor(linewidth))) +
+    geom_ribbon(data=coverage_raw, aes(x=rank, ymin=lower*100, ymax=upper*100, fill=subgroup), alpha=alpha, linetype=0) +
+    geom_ribbon(data=coverage_adj, aes(x=rank, ymin=lower*100, ymax=upper*100, fill=subgroup), alpha=alpha, linetype=0) +
+    theme_bw() +
+    ylim(0,100) + 
+    labs(x=NULL, y=y_title, fill=col_title, colour=col_title, linetype=linetype_title) +
+    theme(axis.text.x = element_text(angle=90), panel.grid.minor.x = element_blank()) +
+    scale_x_continuous(breaks=seq(1,maxRank), labels=ranks$locus[1:maxRank]) + 
+    scale_color_manual(values=cols, ) + 
+    scale_fill_manual(values=cols) + 
+    scale_size_manual(values = c("0.5" = 0.5, "1" = 1)) + 
+    guides(fill = guide_legend(order = 1),       # If you have a 'fill' aesthetic
+           color = guide_legend(order = 1),      # If you mean 'color' legend should be on top
+           linetype = guide_legend(order = 2),   # Linetype legend below
+           size = "none")
+  
+  print(plot)
+  
+  return(plot)
+}
+
 timelineBarplot <- function(data, region, xlimits=c(2012,2024), xbreaks=seq(2013,2023,2), ylim=c(0,250),
                             legend_title=NULL, xlab="Year", ylab="", legend.position="right",
                             cols=unname(alphabet()), legend_size=unit(6,"pt"), axis_text=8, title_size=10) {

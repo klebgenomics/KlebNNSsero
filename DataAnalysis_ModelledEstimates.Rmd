@@ -563,6 +563,15 @@ kbayes_raw_coverage <- getCumulativeCoverageGlobalRegional(kbayes_raw, kbayes$lo
 coverage_globalTop20_globalRegional <- plotCoverage(kbayes_raw_coverage, kbayes$locus_rank, maxRank=20, cols=region_cols)
 
 coverage_globalTop20_globalRegional
+
+
+# add cluster-adjusted
+kbayes_adj_coverage <- getCumulativeCoverageGlobalRegional(kbayes, kbayes$locus_rank) %>%
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+
+coverage_globalTop20_globalRegional <- plotCoverageRawAdj(kbayes_raw_coverage, kbayes_adj_coverage, kbayes$locus_rank, maxRank=20, cols=region_cols, linetype_title = "")
+
+coverage_globalTop20_globalRegional
 ```
 
 
@@ -572,6 +581,12 @@ coverage_globalTop20_globalRegional
 kbayes_fatal_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/K_Fatal_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/K_Fatal_min10_raw_28_posterior_subgroup.csv.gz")
 
 kbayes_fatal_raw_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_rank, kbayes_fatal_raw_min10perSite$global_post) %>% mutate(type="min10")
+
+
+# cluster-adjusted
+kbayes_fatal_adj_min10perSite <- parseModelledEstimates(global_post="outputs_core/K_Fatal_min10_adj_28_posterior_global.csv.gz", region_post="outputs_core/K_Fatal_min10_adj_28_posterior_subgroup.csv.gz")
+
+kbayes_fatal_adj_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_rank, kbayes_fatal_adj_min10perSite$global_post) %>% mutate(type="min10")
 ```
 
 ## ESBL - read posterior estimates for adjusted counts (main) and raw counts (for comparison)
@@ -579,6 +594,12 @@ kbayes_fatal_raw_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_ran
 kbayes_esbl_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/K_ESBL_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/K_ESBL_min10_raw_28_posterior_subgroup.csv.gz")
 
 kbayes_esbl_raw_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_rank, kbayes_esbl_raw_min10perSite$global_post) %>% mutate(type="min10")
+
+
+# cluster-adjusted
+kbayes_esbl_adj_min10perSite <- parseModelledEstimates(global_post="outputs_core/K_ESBL_min10_adj_28_posterior_global.csv.gz", region_post="outputs_core/K_ESBL_min10_adj_28_posterior_subgroup.csv.gz")
+
+kbayes_esbl_adj_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_rank, kbayes_esbl_adj_min10perSite$global_post) %>% mutate(type="min10")
 ```
 
 ## CP - read posterior estimates for adjusted counts (main) and raw counts (for comparison)
@@ -587,6 +608,12 @@ kbayes_esbl_raw_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_rank
 kbayes_cp_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/K_Carba_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/K_Carba_min10_raw_28_posterior_subgroup.csv.bz2")
 
 kbayes_cp_raw_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_rank, kbayes_cp_raw_min10perSite$global_post) %>% mutate(type="min10")
+
+
+# cluster adjusted
+kbayes_cp_adj_min10perSite <- parseModelledEstimates(global_post="outputs_core/K_Carba_min10_adj_28_posterior_global.csv.gz", region_post="outputs_core/K_Carba_min10_adj_28_posterior_subgroup.csv.bz2")
+
+kbayes_cp_adj_min10perSite_coverage <- getCumulativeCoverage(kbayes$locus_rank, kbayes_cp_adj_min10perSite$global_post) %>% mutate(type="min10")
 ```
 
 # combine coverage estimates for subgroups (fatal, ESBL, CP) - Fig3ai
@@ -601,6 +628,18 @@ kbayes_raw_coverage_subgroups <- kbayes_esbl_raw_min10perSite_coverage %>% mutat
 coverage_globalTop20_subgroups <- plotCoverage(kbayes_raw_coverage_subgroups, kbayes$locus_rank, maxRank=20, cols=group_cols)
 
 coverage_globalTop20_subgroups
+
+
+
+# add cluster adjusted
+kbayes_adj_coverage_subgroups <- kbayes_esbl_adj_min10perSite_coverage %>% mutate(subgroup="ESBL") %>%
+  bind_rows(kbayes_cp_adj_min10perSite_coverage %>% mutate(subgroup="CP")) %>%
+  bind_rows(kbayes_fatal_adj_min10perSite_coverage %>% mutate(subgroup="Fatal")) %>%
+  bind_rows(kbayes_adj_coverage %>% filter(subgroup=="Global") %>% mutate(subgroup="All") ) %>%
+  mutate(subgroup=fct_relevel(subgroup,c("All", "Fatal", "ESBL", "CP")))
+
+coverage_globalTop20_subgroups <- plotCoverageRawAdj(kbayes_raw_coverage_subgroups, kbayes_adj_coverage_subgroups, kbayes$locus_rank, maxRank=20, cols=group_cols, linetype_title = "")
+
 ```
 
 # take top 8 per region - Fig3aii and Fig3bii
@@ -645,6 +684,26 @@ kbayes_raw_coverage_subgroups_top8perRegion <- kbayes_esbl_raw_min10perSite_cove
 coverage_subgroups_top8perRegion <- plotCoverage(kbayes_raw_coverage_subgroups_top8perRegion, k_rank_region8, maxRank=nrow(k_rank_region8), cols=group_cols)
 
 coverage_subgroups_top8perRegion
+
+
+# add cluster-adjusted
+# calculate global & regional coverage for these K - Fig 3bii
+kbayes_adj_coverage_top8perRegion <- getCumulativeCoverageGlobalRegional(kbayes, k_rank_region8) %>%
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+
+coverage_rawAdj_global_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_top8perRegion, kbayes_adj_coverage_top8perRegion, k_rank_region8, maxRank=nrow(k_rank_region8), cols=region_cols, linetype_title = "")
+
+#subgroups
+kbayes_fatal_adj_min10perSite_coverage_top8perRegion <- getCumulativeCoverage(k_rank_region8, kbayes_fatal_adj_min10perSite$global_post)
+kbayes_esbl_adj_min10perSite_coverage_top8perRegion <- getCumulativeCoverage(k_rank_region8, kbayes_esbl_adj_min10perSite$global_post)
+kbayes_cp_adj_min10perSite_coverage_top8perRegion <- getCumulativeCoverage(k_rank_region8, kbayes_cp_adj_min10perSite$global_post)
+
+kbayes_adj_coverage_subgroups_top8perRegion <- kbayes_esbl_adj_min10perSite_coverage_top8perRegion %>% mutate(subgroup="ESBL") %>%
+  bind_rows(kbayes_cp_adj_min10perSite_coverage_top8perRegion %>% mutate(subgroup="CP")) %>%
+  bind_rows(kbayes_fatal_adj_min10perSite_coverage_top8perRegion %>% mutate(subgroup="Fatal")) %>%
+  bind_rows(kbayes_adj_coverage_top8perRegion %>% filter(subgroup=="Global") %>% mutate(subgroup="All") ) %>%
+  mutate(subgroup=fct_relevel(subgroup,c("All", "Fatal", "ESBL", "CP")))
+
 ```
 
 ``` {r}
@@ -653,6 +712,43 @@ coverage_subgroups_top8perRegion
 ggsave("figures/Fig3_Kcoverage_raw.pdf", width=8, height=8)
 ggsave("figures/Fig3_Kcoverage_raw.png", width=8, height=8)
 ```
+
+
+# cluster-adjusted coverage top8K per region
+``` {r}
+# All
+coverage_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_subgroups_top8perRegion %>% filter(subgroup %in% c("All")), kbayes_adj_coverage_subgroups_top8perRegion %>% filter(subgroup %in% c("All")), k_rank_region8, maxRank=20, xintercept=c(5,10,15,20), cols=group_cols, col_title = "", linetype_title="")
+
+# Fatal
+coverage_fatal_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_subgroups_top8perRegion %>% filter(subgroup %in% c("Fatal")), kbayes_adj_coverage_subgroups_top8perRegion %>% filter(subgroup %in% c("Fatal")), k_rank_region8, maxRank=20, xintercept=c(5,10,15,20), cols=group_cols, col_title = "", linetype_title="")
+
+# ESBL
+coverage_esbl_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_subgroups_top8perRegion %>% filter(subgroup %in% c("ESBL")), kbayes_adj_coverage_subgroups_top8perRegion %>% filter(subgroup %in% c("ESBL")), k_rank_region8, maxRank=20, xintercept=c(5,10,15,20), cols=group_cols, col_title = "", linetype_title="")
+
+# CP
+coverage_cp_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_subgroups_top8perRegion %>% filter(subgroup %in% c("CP")), kbayes_adj_coverage_subgroups_top8perRegion %>% filter(subgroup %in% c("CP")), k_rank_region8, maxRank=20, xintercept=c(5,10,15,20), cols=group_cols, col_title = "", linetype_title="")
+
+# South Asia
+coverage_SAsia_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_top8perRegion %>% filter(subgroup=="Southern Asia"), kbayes_adj_coverage_top8perRegion %>% filter(subgroup=="Southern Asia"), k_rank_region8, maxRank=nrow(k_rank_region8), cols=region_cols, linetype_title = "")
+
+# South Africa
+coverage_SA_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_top8perRegion %>% filter(subgroup=="Southern Africa"), kbayes_adj_coverage_top8perRegion %>% filter(subgroup=="Southern Africa"), k_rank_region8, maxRank=nrow(k_rank_region8), cols=region_cols, linetype_title = "")
+
+# West Africa
+coverage_WA_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_top8perRegion %>% filter(subgroup=="Western Africa"), kbayes_adj_coverage_top8perRegion %>% filter(subgroup=="Western Africa"), k_rank_region8, maxRank=nrow(k_rank_region8), cols=region_cols, linetype_title = "")
+
+# East Africa
+coverage_EA_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_top8perRegion %>% filter(subgroup=="Eastern Africa"), kbayes_adj_coverage_top8perRegion %>% filter(subgroup=="Eastern Africa"), k_rank_region8, maxRank=nrow(k_rank_region8), cols=region_cols, linetype_title = "") 
+```
+
+``` {r}
+(coverage_rawAdj_subgroups_top8perRegion + ggtitle("All") +
+   coverage_fatal_rawAdj_subgroups_top8perRegion + ggtitle("Fatal") + coverage_esbl_rawAdj_subgroups_top8perRegion + ggtitle("ESBL") + coverage_cp_rawAdj_subgroups_top8perRegion + ggtitle("CP") + coverage_SAsia_rawAdj_subgroups_top8perRegion + ggtitle("S. Asia") + coverage_EA_rawAdj_subgroups_top8perRegion + ggtitle("E. Africa") + coverage_SA_rawAdj_subgroups_top8perRegion + ggtitle("S. Africa") + coverage_WA_rawAdj_subgroups_top8perRegion +ggtitle("W. Africa")) + plot_layout(guides="collect", nrow=2, ncol=4) & theme(legend.position = 'none')
+
+ggsave("figures/FigX_K_prevAdj_coverageRawAdj.pdf", width=12, height=8, device = cairo_pdf, family = "Arial Unicode MS")
+ggsave("figures/FigX_K_prevAdj_coverageRawAdj.png", width=12, height=8)
+```
+
 
 
 # Table 2 - coverage stats for all/ESBL/CP/fatal, for global and regional
@@ -670,26 +766,50 @@ table2 <- kbayes_raw_coverage %>% mutate(cases="All") %>%
   bind_rows(kbayes_cp_raw_min10perSite_coverageRegional %>% mutate(cases="  CP infections")) %>%
   filter(rank %in% c(5,10,15,20)) %>% 
   mutate(upper=if_else(upper>1, 1, upper)) %>%
-  mutate(summary=paste0(round(mean,3)*100," (",round(lower,3)*100,"-",round(upper,3)*100,")")) %>% 
+  mutate(summary=paste0(sprintf("%.1f", mean * 100), " (", sprintf("%.1f", lower * 100), "-", sprintf("%.1f", upper * 100), ")")) %>% 
   select(rank, subgroup, cases, summary) %>% 
   pivot_wider(names_from=rank, values_from=summary, id_cols=c(subgroup, cases)) %>%
   rename(Region=subgroup)
 
+
+# cluster adjusted
+kbayes_fatal_adj_min10perSite_coverageRegional <- getCumulativeCoverageGlobalRegional(ranks=kbayes$locus_rank, bayes=kbayes_fatal_adj_min10perSite, maxRank=20)
+
+kbayes_esbl_adj_min10perSite_coverageRegional <- getCumulativeCoverageGlobalRegional(ranks=kbayes$locus_rank, bayes=kbayes_esbl_adj_min10perSite, maxRank=20)
+
+kbayes_cp_adj_min10perSite_coverageRegional <- getCumulativeCoverageGlobalRegional(ranks=kbayes$locus_rank, bayes=kbayes_cp_adj_min10perSite, maxRank=20)
+
+table2_adj <- kbayes_adj_coverage %>% mutate(cases="All") %>%
+  bind_rows(kbayes_fatal_adj_min10perSite_coverageRegional %>% mutate(cases="  Fatal infections")) %>%
+  bind_rows(kbayes_esbl_adj_min10perSite_coverageRegional %>% mutate(cases="  ESBL infections")) %>%
+  bind_rows(kbayes_cp_adj_min10perSite_coverageRegional %>% mutate(cases="  CP infections")) %>%
+  filter(rank %in% c(5,10,15,20)) %>% 
+  mutate(upper=if_else(upper>1, 1, upper)) %>%
+  mutate(summary=paste0(sprintf("%.1f", mean * 100), " (", sprintf("%.1f", lower * 100), "-", sprintf("%.1f", upper * 100), ")")) %>% 
+  select(rank, subgroup, cases, summary) %>% 
+  pivot_wider(names_from=rank, values_from=summary, id_cols=c(subgroup, cases)) %>%
+  rename(Region=subgroup)
+
+
+# 
+table2 <- bind_rows(table2 %>% mutate(Counts="raw"), table2_adj %>% mutate(Counts="adj"))
 ```
 
 # add totals per subgroup
 ``` {r}
-fatal_counts <- data_NNS_sites10 %>% filter(Mortality==1) %>% group_by(Region) %>% count()
-fatal_counts <- fatal_counts %>% bind_rows(list(Region="Global", n=sum(fatal_counts$n)))
+# cluster-adjusted
+fatal_counts <- data_NNS_sites10 %>% filter(Mortality==1) %>% group_by(Region) %>% summarise(raw=n(), adj=length(unique(Cluster))) %>% pivot_longer(cols=c(raw, adj), names_to="Counts", values_to="n")
+fatal_counts <- fatal_counts %>% group_by(Counts) %>% summarise(n=sum(n)) %>% mutate(Region="Global") %>% bind_rows(fatal_counts)
 
-esbl_counts <- data_NNS_sites10 %>% filter(resistance_score>=1) %>% group_by(Region) %>% count()
-esbl_counts <- esbl_counts %>% bind_rows(list(Region="Global", n=sum(esbl_counts$n)))
+esbl_counts <- data_NNS_sites10 %>% filter(resistance_score>=1) %>% group_by(Region) %>% summarise(raw=n(), adj=length(unique(Cluster))) %>% pivot_longer(cols=c(raw, adj), names_to="Counts", values_to="n")
+esbl_counts <- esbl_counts %>% group_by(Counts) %>% summarise(n=sum(n)) %>% mutate(Region="Global") %>% bind_rows(esbl_counts)
 
-cp_counts <- data_NNS_sites10 %>% filter(resistance_score>=2) %>% group_by(Region) %>% count()
-cp_counts <- cp_counts %>% bind_rows(list(Region="Global", n=sum(cp_counts$n)))
+cp_counts <- data_NNS_sites10 %>% filter(resistance_score>=2) %>% group_by(Region) %>% summarise(raw=n(), adj=length(unique(Cluster))) %>% pivot_longer(cols=c(raw, adj), names_to="Counts", values_to="n")
+cp_counts <- cp_counts %>% group_by(Counts) %>% summarise(n=sum(n)) %>% mutate(Region="Global") %>% bind_rows(cp_counts)
 
-total_counts <- data_NNS_sites10 %>% group_by(Region) %>% count()
-total_counts <- total_counts %>% bind_rows(list(Region="Global", n=sum(total_counts$n)))
+total_counts <- data_NNS_sites10 %>% group_by(Region) %>% summarise(raw=n(), adj=length(unique(Cluster))) %>% pivot_longer(cols=c(raw, adj), names_to="Counts", values_to="n")
+total_counts <- total_counts %>% group_by(Counts) %>% summarise(n=sum(n)) %>% mutate(Region="Global") %>% bind_rows(total_counts)
+
 ```
 
 ``` {r}
@@ -697,23 +817,30 @@ table2 <- esbl_counts %>% mutate(cases="  ESBL infections") %>%
   bind_rows(cp_counts%>% mutate(cases="  CP infections")) %>%
   bind_rows(fatal_counts %>% mutate(cases="  Fatal infections")) %>%
   bind_rows(total_counts %>% mutate(cases="All")) %>%
-  full_join(table2, by=c("Region", "cases")) %>%
+  full_join(table2, by=c("Region", "cases", "Counts")) %>%
   mutate(cases=fct_relevel(cases,c("All", "  Fatal infections", "  ESBL infections", "  CP infections")))
 
 # sort function isn't working when ordering region factor using fct_relevel
 table2$Region <- factor(table2$Region, levels = c("Global", "Eastern Africa", "Southern Africa", "Western Africa", "Southern Asia"))
+table2$Counts <- factor(table2$Counts, levels = c("raw", "adj"))
 
 table2 <- table2 %>%
-  arrange(Region, cases) %>%
+  arrange(Region, cases, Counts) %>%
   relocate(n, .after=cases) %>% 
+  relocate(Counts, .after=cases) %>% 
   mutate(cases=if_else(cases=="All", Region, cases)) %>%
   rename_with(~ paste0(.x, " KL"), c("5", "10", "15", "20")) %>%
   rename(N=n) %>%
   rename(Data=cases) %>%
   ungroup %>% select(-Region)
-  
-write_tsv(table2, file="tables/Table2_coverage.tsv")
+
+# write out raw to main Table 2
+write_tsv(table2 %>% filter(Counts=="raw") %>% select(-Counts), file="tables/Table2_coverage.tsv")
+
+# write out cluster-adjusted to appendix
+write_tsv(table2 %>% filter(Counts=="adj") %>% select(-Counts), file="tables/TableS4_coverage_adjusted.tsv")
 ```
+
 
 # Table S4 - K set2 coverage stats for all/ESBL/CP/fatal, for global and regional
 ``` {r}
@@ -729,11 +856,31 @@ tableS4 <- kbayes_raw_coverage_top8perRegion %>% mutate(cases="All") %>%
   bind_rows(kbayes_cp_raw_min10perSite_coverageRegional_top8perRegion %>% mutate(cases="  CP infections")) %>%
   mutate(upper=if_else(upper>1, 1, upper)) %>%
   filter(rank %in% c(5,10,15,20)) %>% 
-  mutate(summary=paste0(round(mean,3)*100," (",round(lower,3)*100,"-",round(upper,3)*100,")")) %>% 
+  mutate(summary=paste0(sprintf("%.1f", mean * 100), " (", sprintf("%.1f", lower * 100), "-", sprintf("%.1f", upper * 100), ")")) %>% 
   select(rank, subgroup, cases, summary) %>% 
   pivot_wider(names_from=rank, values_from=summary, id_cols=c(subgroup, cases)) %>%
   rename(Region=subgroup)
 
+
+# cluster-adjusted
+kbayes_fatal_adj_min10perSite_coverageRegional_top8perRegion <- getCumulativeCoverageGlobalRegional(ranks=k_rank_region8, bayes=kbayes_fatal_adj_min10perSite, maxRank=20)
+
+kbayes_esbl_adj_min10perSite_coverageRegional_top8perRegion <- getCumulativeCoverageGlobalRegional(ranks=k_rank_region8, bayes=kbayes_esbl_adj_min10perSite, maxRank=20)
+
+kbayes_cp_adj_min10perSite_coverageRegional_top8perRegion <- getCumulativeCoverageGlobalRegional(ranks=k_rank_region8, bayes=kbayes_cp_adj_min10perSite, maxRank=20)
+
+tableS4_adj <- kbayes_adj_coverage_top8perRegion %>% mutate(cases="All") %>%
+  bind_rows(kbayes_fatal_adj_min10perSite_coverageRegional_top8perRegion %>% mutate(cases="  Fatal infections")) %>%
+  bind_rows(kbayes_esbl_adj_min10perSite_coverageRegional_top8perRegion %>% mutate(cases="  ESBL infections")) %>%
+  bind_rows(kbayes_cp_adj_min10perSite_coverageRegional_top8perRegion %>% mutate(cases="  CP infections")) %>%
+  mutate(upper=if_else(upper>1, 1, upper)) %>%
+  filter(rank %in% c(5,10,15,20)) %>% 
+  mutate(summary=paste0(sprintf("%.1f", mean * 100), " (", sprintf("%.1f", lower * 100), "-", sprintf("%.1f", upper * 100), ")")) %>%
+  select(rank, subgroup, cases, summary) %>% 
+  pivot_wider(names_from=rank, values_from=summary, id_cols=c(subgroup, cases)) %>%
+  rename(Region=subgroup)
+
+tableS4 <- bind_rows(tableS4 %>% mutate(Counts="raw"), tableS4_adj %>% mutate(Counts="adj"))
 ```
 
 ``` {r}
@@ -741,15 +888,17 @@ tableS4 <- esbl_counts %>% mutate(cases="  ESBL infections") %>%
   bind_rows(cp_counts%>% mutate(cases="  CP infections")) %>%
   bind_rows(fatal_counts %>% mutate(cases="  Fatal infections")) %>%
   bind_rows(total_counts %>% mutate(cases="All")) %>%
-  full_join(tableS4, by=c("Region", "cases")) %>%
+  full_join(tableS4, by=c("Region", "cases", "Counts")) %>%
   mutate(cases=fct_relevel(cases,c("All", "  Fatal infections", "  ESBL infections", "  CP infections")))
 
 # sort function isn't working when ordering region factor using fct_relevel
 tableS4$Region <- factor(tableS4$Region, levels = c("Global", "Eastern Africa", "Southern Africa", "Western Africa", "Southern Asia"))
+tableS4$Counts <- factor(tableS4$Counts, levels = c("raw", "adj"))
 
 tableS4 <- tableS4 %>%
-  arrange(Region, cases) %>%
+  arrange(Region, cases, Counts) %>%
   relocate(n, .after=cases) %>% 
+  relocate(Counts, .after=cases) %>% 
   mutate(cases=if_else(cases=="All", Region, cases)) %>%
   rename_with(~ paste0(.x, " KL"), c("5", "10", "15", "20")) %>%
   rename(N=n) %>%
@@ -836,29 +985,55 @@ ocoverage_globalTop10_globalRegional <- plotCoverage(obayes_raw_coverage, obayes
 
 ocoverage_globalTop10_globalRegional
 
+# cluster-adjusted
+obayes_adj_coverage <- getCumulativeCoverageGlobalRegional(obayes, obayes$locus_rank) %>%
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+
+ocoverage_rawAdj_globalTop10_globalRegional <- plotCoverageRawAdj(obayes_raw_coverage, obayes_adj_coverage, obayes$locus_rank, maxRank=10, xintercept=c(4,8), cols=region_cols, col_title = "d) Region", linetype_title = "")
+
+ocoverage_rawAdj_globalTop10_globalRegional
+
 ```
 
 
-## O fatal - read posterior estimates for adjusted counts (main) and raw counts (for comparison)
+## O fatal - read posterior estimates for raw and adjusted counts
 ``` {r}
 obayes_fatal_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/O_Fatal_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/O_Fatal_min10_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
 
 obayes_fatal_raw_min10perSite_coverage <- getCumulativeCoverage(obayes$locus_rank, obayes_fatal_raw_min10perSite$global_post) %>% mutate(type="min10")
+
+
+# cluster-adjusted
+obayes_fatal_adj_min10perSite <- parseModelledEstimates(global_post="outputs_core/O_Fatal_min10_adj_28_posterior_global.csv.gz", region_post="outputs_core/O_Fatal_min10_adj_28_posterior_subgroup.csv.gz", fixOnames = T)
+
+obayes_fatal_adj_min10perSite_coverage <- getCumulativeCoverage(obayes$locus_rank, obayes_fatal_adj_min10perSite$global_post) %>% mutate(type="min10")
 ```
 
-## ESBL - read posterior estimates for adjusted counts (main) and raw counts (for comparison)
+## ESBL - read posterior estimates for raw and adjusted counts
 ``` {r}
 obayes_esbl_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/O_ESBL_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/O_ESBL_min10_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
 
 obayes_esbl_raw_min10perSite_coverage <- getCumulativeCoverage(obayes$locus_rank, obayes_esbl_raw_min10perSite$global_post) %>% mutate(type="min10")
+
+
+# cluster-adjusted
+obayes_esbl_adj_min10perSite <- parseModelledEstimates(global_post="outputs_core/O_ESBL_min10_adj_28_posterior_global.csv.gz", region_post="outputs_core/O_ESBL_min10_adj_28_posterior_subgroup.csv.gz", fixOnames = T)
+
+obayes_esbl_adj_min10perSite_coverage <- getCumulativeCoverage(obayes$locus_rank, obayes_esbl_adj_min10perSite$global_post) %>% mutate(type="min10")
 ```
 
 
-## CP - read posterior estimates for adjusted counts (main) and raw counts (for comparison)
+## CP - read posterior estimates for raw and adjusted counts
 ``` {r}
 obayes_cp_raw_min10perSite <- parseModelledEstimates(global_post="outputs_core/O_Carba_min10_raw_28_posterior_global.csv.gz", region_post="outputs_core/O_Carba_min10_raw_28_posterior_subgroup.csv.gz", fixOnames = T)
 
 obayes_cp_raw_min10perSite_coverage <- getCumulativeCoverage(obayes$locus_rank, obayes_cp_raw_min10perSite$global_post) %>% mutate(type="min10")
+
+
+# cluster-adjusted
+obayes_cp_adj_min10perSite <- parseModelledEstimates(global_post="outputs_core/O_Carba_min10_adj_28_posterior_global.csv.gz", region_post="outputs_core/O_Carba_min10_adj_28_posterior_subgroup.csv.gz", fixOnames = T)
+
+obayes_cp_adj_min10perSite_coverage <- getCumulativeCoverage(obayes$locus_rank, obayes_cp_adj_min10perSite$global_post) %>% mutate(type="min10")
 ```
 
 # combine coverage estimates for subgroups (fatal, ESBL, CP) - Fig4c
@@ -883,6 +1058,40 @@ ggsave("figures/Fig4_O_prevAdj_coverageRaw.pdf", width=8, height=8, device = cai
 ggsave("figures/Fig4_O_prevAdj_coverageRaw.png", width=8, height=8)
 ```
 
+
+# supp figure with O type coverage, raw and adjusted
+``` {r}
+
+obayes_adj_coverage_subgroups <- obayes_esbl_adj_min10perSite_coverage %>% mutate(subgroup="ESBL") %>%
+  bind_rows(obayes_cp_adj_min10perSite_coverage %>% mutate(subgroup="CP")) %>%
+  bind_rows(obayes_fatal_adj_min10perSite_coverage %>% mutate(subgroup="Fatal")) %>%
+  bind_rows(obayes_adj_coverage %>% filter(subgroup=="Global") %>% mutate(subgroup="All") ) %>%
+  mutate(subgroup=fct_relevel(subgroup,c("All", "Fatal", "ESBL", "CP")))
+
+o_coverage_rawAdj_globalTop10_subgroups <- plotCoverageRawAdj(obayes_raw_coverage_subgroups, obayes_adj_coverage_subgroups, obayes$locus_rank, maxRank=10, xintercept=c(5,10), cols=group_cols, col_title = "c) Subgroup", linetype_title="")
+
+o_coverage_rawAdj_globalTop10_subgroups
+
+# ESBL
+esbl_ocov_rawAdj <- plotCoverageRawAdj(obayes_raw_coverage_subgroups %>% filter(subgroup %in% c("ESBL")), obayes_adj_coverage_subgroups %>% filter(subgroup %in% c("ESBL")), obayes$locus_rank, maxRank=10, xintercept=c(5,10), cols=group_cols, col_title = "", linetype_title="")
+
+# CP
+cp_ocov_rawAdj <- plotCoverageRawAdj(obayes_raw_coverage_subgroups %>% filter(subgroup %in% c("CP")), obayes_adj_coverage_subgroups %>% filter(subgroup %in% c("CP")), obayes$locus_rank, maxRank=10, xintercept=c(5,10), cols=group_cols, col_title = "", linetype_title="")
+
+# All
+ocov_rawAdj <- plotCoverageRawAdj(obayes_raw_coverage_subgroups %>% filter(subgroup %in% c("All")), obayes_adj_coverage_subgroups %>% filter(subgroup %in% c("All")), obayes$locus_rank, maxRank=10, xintercept=c(5,10), cols=group_cols, col_title = "", linetype_title="")
+
+# Fatal
+fatal_ocov_rawAdj <- plotCoverageRawAdj(obayes_raw_coverage_subgroups %>% filter(subgroup %in% c("Fatal")), obayes_adj_coverage_subgroups %>% filter(subgroup %in% c("Fatal")), obayes$locus_rank, maxRank=10, xintercept=c(5,10), cols=group_cols, col_title = "", linetype_title="")
+
+```
+
+``` {r}
+(ocov_rawAdj + ggtitle("All") + fatal_ocov_rawAdj + ggtitle("Fatal") + esbl_ocov_rawAdj + ggtitle("ESBL") + cp_ocov_rawAdj + ggtitle("CP")) + plot_layout(guides="collect", axes="collect", nrow=1, ncol=4) & theme(legend.position = 'none')
+
+ggsave("figures/FigX_O_prevAdj_coverageRawAdj.pdf", width=12, height=4, device = cairo_pdf, family = "Arial Unicode MS")
+ggsave("figures/FigX_O_prevAdj_coverageRawAdj.png", width=12, height=4)
+```
 
 # numbers for text - O prevalence and coverage
 ``` {r}
@@ -930,10 +1139,30 @@ tableS5 <- obayes_raw_coverage %>% filter(rank <= 10) %>% mutate(cases="All") %>
   bind_rows(obayes_esbl_raw_min10perSite_coverageRegional %>% mutate(cases="  ESBL infections")) %>%
   bind_rows(obayes_cp_raw_min10perSite_coverageRegional %>% mutate(cases="  CP infections")) %>%
   mutate(upper=if_else(upper>1, 1, upper)) %>%
-  mutate(summary=paste0(round(mean,3)*100," (",round(lower,3)*100,"-",round(upper,3)*100,")")) %>% 
+  mutate(summary=paste0(sprintf("%.1f", mean * 100), " (", sprintf("%.1f", lower * 100), "-", sprintf("%.1f", upper * 100), ")")) %>% 
   select(locus, subgroup, cases, summary) %>% 
   pivot_wider(names_from=locus, values_from=summary, id_cols=c(subgroup, cases)) %>%
   rename(Region=subgroup)
+
+
+
+obayes_fatal_adj_min10perSite_coverageRegional <- getCumulativeCoverageGlobalRegional(ranks=obayes$locus_rank, bayes=obayes_fatal_adj_min10perSite, maxRank=10)
+
+obayes_esbl_adj_min10perSite_coverageRegional <- getCumulativeCoverageGlobalRegional(ranks=obayes$locus_rank, bayes=obayes_esbl_adj_min10perSite, maxRank=10)
+
+obayes_cp_adj_min10perSite_coverageRegional <- getCumulativeCoverageGlobalRegional(ranks=obayes$locus_rank, bayes=obayes_cp_adj_min10perSite, maxRank=10)
+
+tableS5_adj <- obayes_adj_coverage %>% filter(rank <= 10) %>% mutate(cases="All") %>%
+  bind_rows(obayes_fatal_adj_min10perSite_coverageRegional %>% mutate(cases="  Fatal infections")) %>%
+  bind_rows(obayes_esbl_adj_min10perSite_coverageRegional %>% mutate(cases="  ESBL infections")) %>%
+  bind_rows(obayes_cp_adj_min10perSite_coverageRegional %>% mutate(cases="  CP infections")) %>%
+  mutate(upper=if_else(upper>1, 1, upper)) %>%
+  mutate(summary=paste0(sprintf("%.1f", mean * 100), " (", sprintf("%.1f", lower * 100), "-", sprintf("%.1f", upper * 100), ")")) %>% 
+  select(locus, subgroup, cases, summary) %>% 
+  pivot_wider(names_from=locus, values_from=summary, id_cols=c(subgroup, cases)) %>%
+  rename(Region=subgroup)
+
+tableS5 <- bind_rows(tableS5 %>% mutate(Counts="raw"), tableS5_adj %>% mutate(Counts="adj"))
 
 ```
 
@@ -943,15 +1172,17 @@ tableS5 <- esbl_counts %>% mutate(cases="  ESBL infections") %>%
   bind_rows(cp_counts %>% mutate(cases="  CP infections")) %>%
   bind_rows(fatal_counts %>% mutate(cases="  Fatal infections")) %>%
   bind_rows(total_counts %>% mutate(cases="All")) %>%
-  full_join(tableS5, by=c("Region", "cases")) %>%
+  full_join(tableS5, by=c("Region", "cases", "Counts")) %>%
   mutate(cases=fct_relevel(cases,c("All", "  Fatal infections", "  ESBL infections", "  CP infections")))
 
 # sort function isn't working when ordering region factor using fct_relevel
 tableS5$Region <- factor(tableS5$Region, levels = c("Global", "Eastern Africa", "Southern Africa", "Western Africa", "Southern Asia"))
+tableS5$Counts <- factor(tableS5$Counts, levels = c("raw", "adj"))
 
 tableS5 <- tableS5 %>%
-  arrange(Region, cases) %>%
+  arrange(Region, cases, Counts) %>%
   relocate(n, .after=cases) %>% 
+  relocate(Counts, .after=cases) %>% 
   mutate(cases=if_else(cases=="All", Region, cases)) %>%
   rename(N=n) %>%
   rename(Data=cases) %>%
