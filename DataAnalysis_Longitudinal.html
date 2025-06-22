@@ -367,13 +367,13 @@ display: none;
 <div id="set-colour-palettes" class="section level2">
 <h2>set colour palettes</h2>
 <pre class="r"><code># source: https://davidmathlogic.com/colorblind/#%23D81B60-%231E88E5-%23FFC107-%23004D40
-region_cols &lt;- c(`Southern Asia` =&quot;#D81B60&quot;, `Western Africa`=&quot;#1E88E5&quot;, `Eastern Africa`=&quot;#FFC107&quot;, `Southern Africa`=&quot;#81B1A9&quot;, Global=&quot;black&quot;)</code></pre>
+region_cols &lt;- c(`South Asia`=&quot;#D81B60&quot;, `Western Africa`=&quot;#1E88E5&quot;, `Eastern Africa`=&quot;#FFC107&quot;, `Southern Africa`=&quot;#81B1A9&quot;, Global=&quot;black&quot;)</code></pre>
 <pre class="r"><code>data_long &lt;- read_tsv(&quot;tables/longitudinal_data.tsv&quot;)</code></pre>
 <pre><code>## Rows: 1024 Columns: 23
 ## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr (16): Genome Name, Study, Region, Country, Cluster, neonatal, K_locus, K...
-## dbl  (7): Site, Year, N50, contig_count, total_size, resistance_score, Morta...
+## dbl  (7): Year, N50, contig_count, total_size, resistance_score, Mortality, ...
 ## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>

@@ -60,7 +60,8 @@ parseModelledEstimates <- function(global_post, region_post, fixOnames=FALSE, me
   bayes_global_post <- read_csv(global_post)
   
   # get region posterior
-  bayes_region_post <- read_csv(region_post)
+  bayes_region_post <- read_csv(region_post)  %>%
+    mutate(subgroup=if_else(subgroup=="Southern Asia", "South Asia", subgroup))
   
   # update O names if required
   if (fixOnames) {
@@ -240,7 +241,7 @@ region_heatmap <- function(estimates, global, ranks,
                              maxRank=30, min_col="white", max_col="#d17187", 
                              rel_min_height = 0.01, linewidth=0.2,
                              label_size=2.5, axis_font_size=9, xaxis_angle=45,
-                             region_order=c("Global", "Western Africa", "Southern Africa", "Eastern Africa", "Southern Asia"),
+                             region_order=c("Global", "Western Africa", "Southern Africa", "Eastern Africa", "South Asia"),
                              xtitle="Region",
                              title="b) Regional prevalence",
                              legend_title="Mean\nprevalence (%)", median=FALSE,

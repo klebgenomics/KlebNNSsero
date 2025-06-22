@@ -29,13 +29,14 @@ source("seroepi_functions.R")
 ## set colour palettes
 ``` {r}
 # source: https://davidmathlogic.com/colorblind/#%23D81B60-%231E88E5-%23FFC107-%23004D40
-region_cols <- c(`Southern Asia` ="#D81B60", `Western Africa`="#1E88E5", `Eastern Africa`="#FFC107", `Southern Africa`="#81B1A9", Global="black")
+region_cols <- c(`South Asia` ="#D81B60", `Western Africa`="#1E88E5", `Eastern Africa`="#FFC107", `Southern Africa`="#81B1A9", Global="black")
 ```
 
 ## load data on included samples - Table S3 (includes alternative clusters)
 ``` {r}
 data_NNS_sites10 <- read_tsv("tables/TableS3_IsolatesIncluded_NEEDSACCESSIONS.tsv") %>%
-  mutate(Study=if_else(Study=="GBS", "GBS-COP", Study))
+  mutate(Study=if_else(Study=="GBS", "GBS-COP", Study)) %>%
+  mutate(Region=if_else(Region=="Southern Asia", "South Asia", Region))
 ```
 
 ## write out O genotype definitions for Appendix Table S1.6
@@ -50,7 +51,7 @@ countries <- data_NNS_sites10 %>%
   summarise(n=n()) %>%
   arrange(Country) %>% 
   mutate(Region=fct_relevel(Region,
-    c("Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa"))) %>%
+    c("South Asia", "Eastern Africa", "Southern Africa", "Western Africa"))) %>%
   arrange(Region) %>% select(Region, Country, n)
 
 countries
@@ -61,7 +62,7 @@ countries
 timeline_WA <- timelineBarplot(data_NNS_sites10, "Western Africa", cols=c("#e6194B", "#4363d8"), ylim=c(0,150))
 timeline_EA <- timelineBarplot(data_NNS_sites10, "Eastern Africa", cols=c( "#f58231", "#FAC124","#e6194B", "#EFBBBB", "#99ccff", "#4363d8", "#000000", "#994c00", "#4C9F3B", "#9CDA90"))
 timeline_SA <- timelineBarplot(data_NNS_sites10, "Southern Africa", cols=c("#4363d8", "#e6194B", "#f58231", "#EFBBBB", "#FAC124"), ylim=c(0,150))
-timeline_SAs <- timelineBarplot(data_NNS_sites10, "Southern Asia", cols=c("#FAC124", "#e6194B", "#4363d8", "#99ccff", "#4C9F3B", "#9CDA90"))
+timeline_SAs <- timelineBarplot(data_NNS_sites10, "South Asia", cols=c("#FAC124", "#e6194B", "#4363d8", "#99ccff", "#4C9F3B", "#9CDA90"))
 
 timeline_barplot <- timeline_WA+timeline_SA + timeline_EA + timeline_SAs + plot_layout(ncol = 2, axes="collect", heights=c(1,2)) & theme(legend.justification = "left")
 
@@ -201,7 +202,7 @@ country_summary <- data_NNS_sites10 %>%
   bind_rows(overall_summary) %>%
   select(-c(min, max)) %>% relocate(Period, .after=N) %>%
   arrange(Country) %>% 
-  mutate(Region=fct_relevel(Region,c("Eastern Africa", "Southern Africa", "Western Africa", "Southern Asia", "Total"))) %>%
+  mutate(Region=fct_relevel(Region,c("Eastern Africa", "Southern Africa", "Western Africa", "South Asia", "Total"))) %>%
   arrange(Region) 
 
 

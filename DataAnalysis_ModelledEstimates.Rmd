@@ -30,14 +30,15 @@ source("seroepi_functions.R")
 ## set colour palettes
 ``` {r}
 # source: https://davidmathlogic.com/colorblind/#%23D81B60-%231E88E5-%23FFC107-%23004D40
-region_cols <- c(`Southern Asia` ="#D81B60", `Western Africa`="#1E88E5", `Eastern Africa`="#FFC107", `Southern Africa`="#81B1A9", Global="black")
+region_cols <- c(`South Asia` ="#D81B60", `Western Africa`="#1E88E5", `Eastern Africa`="#FFC107", `Southern Africa`="#81B1A9", Global="black")
 group_cols <- c(All="black", Fatal ="#D81B60", ESBL="#1E88E5", CP="#FFC107")
 ```
 
 ## load data on included samples - Table S3
 ``` {r}
 data_NNS_sites10 <- read_tsv("tables/TableS3_IsolatesIncluded_NEEDSACCESSIONS.tsv") %>%
-  mutate(Study=if_else(Study=="GBS", "GBS-COP", Study))
+  mutate(Study=if_else(Study=="GBS", "GBS-COP", Study)) %>%
+  mutate(Region=if_else(Region=="Southern Asia", "South Asia", Region))
 ```
 
 
@@ -132,10 +133,10 @@ region_2pc <- kbayes$region_est %>% select(locus, subgroup, mean) %>%
   pivot_wider(id_cols=locus, names_from=subgroup, values_from = mean) %>% 
   mutate(d1=abs(`Eastern Africa`-`Southern Africa`),
         d2=abs(`Eastern Africa`-`Western Africa`),
-        d3=abs(`Eastern Africa`-`Southern Asia`),
-        d4=abs(`Southern Africa`-`Southern Asia`),
+        d3=abs(`Eastern Africa`-`South Asia`),
+        d4=abs(`Southern Africa`-`South Asia`),
         d5=abs(`Southern Africa`-`Western Africa`),
-        d6=abs(`Western Africa`-`Southern Asia`)) %>% 
+        d6=abs(`Western Africa`-`South Asia`)) %>% 
   filter(d1>p | d2>p | d3>p | d4>p | d5>p | d6>p)
 ```
 
@@ -145,7 +146,7 @@ region_2pc <- kbayes$region_est %>% select(locus, subgroup, mean) %>%
 kbayes$region_post %>% 
     left_join(kbayes$locus_rank) %>%
     filter(rank<=30) %>%
-    mutate(Region=fct_relevel(subgroup,c("Western Africa", "Southern Africa", "Eastern Africa", "Southern Asia"))) %>%
+    mutate(Region=fct_relevel(subgroup,c("Western Africa", "Southern Africa", "Eastern Africa", "South Asia"))) %>%
     ggplot() +
     geom_hline(yintercept=11) +
     geom_hline(yintercept=21) +
@@ -226,10 +227,10 @@ region_5pc_o <- obayes$region_est %>% select(locus, subgroup, mean) %>%
   pivot_wider(id_cols=locus, names_from=subgroup, values_from = mean) %>% 
   mutate(d1=abs(`Eastern Africa`-`Southern Africa`),
         d2=abs(`Eastern Africa`-`Western Africa`),
-        d3=abs(`Eastern Africa`-`Southern Asia`),
-        d4=abs(`Southern Africa`-`Southern Asia`),
+        d3=abs(`Eastern Africa`-`South Asia`),
+        d4=abs(`Southern Africa`-`South Asia`),
         d5=abs(`Southern Africa`-`Western Africa`),
-        d6=abs(`Western Africa`-`Southern Asia`)) %>% 
+        d6=abs(`Western Africa`-`South Asia`)) %>% 
   filter(d1>p | d2>p | d3>p | d4>p | d5>p | d6>p)
 ```
 
@@ -238,7 +239,7 @@ region_5pc_o <- obayes$region_est %>% select(locus, subgroup, mean) %>%
 obayes$region_post %>% 
     left_join(obayes$locus_rank) %>%
     filter(rank<=10) %>%
-    mutate(Region=fct_relevel(subgroup,c("Western Africa", "Southern Africa", "Eastern Africa", "Southern Asia"))) %>%
+    mutate(Region=fct_relevel(subgroup,c("Western Africa", "Southern Africa", "Eastern Africa", "South Asia"))) %>%
     ggplot() +
     geom_hline(yintercept=11) +
     geom_hline(yintercept=21) +
@@ -339,7 +340,7 @@ ggsave("figures/AppendixFigS1.4_crudeRegionAnnualRateO.png", width=6, height=8)
 ``` {r}
 o_region_ST <- data_NNS_sites10 %>%
   filter(O_genotype %in% c("O2β", "O4", "O2⍺", "O13")) %>%
-  mutate(Region=fct_relevel(Region, c("Western Africa", "Southern Africa", "Eastern Africa", "Southern Asia"))) %>%
+  mutate(Region=fct_relevel(Region, c("Western Africa", "Southern Africa", "Eastern Africa", "South Asia"))) %>%
   ggplot(aes(col=Region, x=K_locus, y=ST)) + 
   geom_jitter(alpha=0.5) +
   theme_bw() + 
@@ -541,12 +542,12 @@ obayes$global_est
 ``` {r}
 # where is O4 found
 data_NNS_sites10 %>% filter(O_genotype=="O4") %>% group_by(Region, Study, Site, ST, K_locus) %>% count() %>% arrange(-n)
-data_NNS_sites10 %>% filter(O_genotype=="O4" & Region=="Southern Asia") %>% group_by(ST, K_locus) %>% count() %>% arrange(-n)
-data_NNS_sites10 %>% filter(O_genotype=="O4" & Region=="Southern Asia") %>% group_by(ST, K_locus, Site) %>% count() %>% arrange(-n)
+data_NNS_sites10 %>% filter(O_genotype=="O4" & Region=="South Asia") %>% group_by(ST, K_locus) %>% count() %>% arrange(-n)
+data_NNS_sites10 %>% filter(O_genotype=="O4" & Region=="South Asia") %>% group_by(ST, K_locus, Site) %>% count() %>% arrange(-n)
 
 data_NNS_sites10 %>% filter(O_genotype=="O2a.v1") %>% group_by(Region, Study, Site, ST, K_locus) %>% count() %>% arrange(-n)
-data_NNS_sites10 %>% filter(O_genotype=="O2a.v1" & Region=="Southern Asia") %>% group_by(ST, K_locus) %>% count() %>% arrange(-n)
-data_NNS_sites10 %>% filter(O_genotype=="O2a.v1" & Region=="Southern Asia") %>% group_by(ST, K_locus, Site) %>% count() %>% arrange(-n)
+data_NNS_sites10 %>% filter(O_genotype=="O2a.v1" & Region=="South Asia") %>% group_by(ST, K_locus) %>% count() %>% arrange(-n)
+data_NNS_sites10 %>% filter(O_genotype=="O2a.v1" & Region=="South Asia") %>% group_by(ST, K_locus, Site) %>% count() %>% arrange(-n)
 
 data_NNS_sites10 %>% filter(O_genotype=="O5") %>% group_by(Region, Study, Site, ST, K_locus) %>% count() %>% arrange(-n)
 data_NNS_sites10 %>% filter(O_genotype=="O5" & Region=="Southern Africa") %>% group_by(ST, K_locus) %>% count() %>% arrange(-n)
@@ -558,7 +559,7 @@ data_NNS_sites10 %>% filter(O_genotype=="O5" & Region=="Southern Africa") %>% gr
 # Global and regional coverage - top20 global - Fig3bi
 ``` {r}
 kbayes_raw_coverage <- getCumulativeCoverageGlobalRegional(kbayes_raw, kbayes$locus_rank) %>%
-  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
 
 coverage_globalTop20_globalRegional <- plotCoverage(kbayes_raw_coverage, kbayes$locus_rank, maxRank=20, cols=region_cols)
 
@@ -567,11 +568,11 @@ coverage_globalTop20_globalRegional
 
 # add cluster-adjusted
 kbayes_adj_coverage <- getCumulativeCoverageGlobalRegional(kbayes, kbayes$locus_rank) %>%
-  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
 
-coverage_globalTop20_globalRegional <- plotCoverageRawAdj(kbayes_raw_coverage, kbayes_adj_coverage, kbayes$locus_rank, maxRank=20, cols=region_cols, linetype_title = "")
+coverage_rawAdj_globalTop20_globalRegional <- plotCoverageRawAdj(kbayes_raw_coverage, kbayes_adj_coverage, kbayes$locus_rank, maxRank=20, cols=region_cols, linetype_title = "")
 
-coverage_globalTop20_globalRegional
+coverage_rawAdj_globalTop20_globalRegional
 ```
 
 
@@ -638,8 +639,44 @@ kbayes_adj_coverage_subgroups <- kbayes_esbl_adj_min10perSite_coverage %>% mutat
   bind_rows(kbayes_adj_coverage %>% filter(subgroup=="Global") %>% mutate(subgroup="All") ) %>%
   mutate(subgroup=fct_relevel(subgroup,c("All", "Fatal", "ESBL", "CP")))
 
-coverage_globalTop20_subgroups <- plotCoverageRawAdj(kbayes_raw_coverage_subgroups, kbayes_adj_coverage_subgroups, kbayes$locus_rank, maxRank=20, cols=group_cols, linetype_title = "")
+coverage_rawAdj_globalTop20_subgroups <- plotCoverageRawAdj(kbayes_raw_coverage_subgroups, kbayes_adj_coverage_subgroups, kbayes$locus_rank, maxRank=20, cols=group_cols, linetype_title = "")
 
+```
+
+
+# raw vs cluster-adjusted coverage global top20 K
+``` {r}
+# All
+coverage_rawAdj_subgroups_top20global <- plotCoverageRawAdj(kbayes_raw_coverage_subgroups %>% filter(subgroup %in% c("All")), kbayes_adj_coverage_subgroups %>% filter(subgroup %in% c("All")), kbayes$locus_rank, maxRank=20, xintercept=c(5,10,15,20), cols=group_cols, col_title = "", linetype_title="")
+
+# Fatal
+coverage_fatal_rawAdj_subgroups_top20global <- plotCoverageRawAdj(kbayes_raw_coverage_subgroups %>% filter(subgroup %in% c("Fatal")), kbayes_adj_coverage_subgroups %>% filter(subgroup %in% c("Fatal")), kbayes$locus_rank, maxRank=20, xintercept=c(5,10,15,20), cols=group_cols, col_title = "", linetype_title="")
+
+# ESBL
+coverage_esbl_rawAdj_subgroups_top20global <- plotCoverageRawAdj(kbayes_raw_coverage_subgroups %>% filter(subgroup %in% c("ESBL")), kbayes_adj_coverage_subgroups %>% filter(subgroup %in% c("ESBL")), kbayes$locus_rank, maxRank=20, xintercept=c(5,10,15,20), cols=group_cols, col_title = "", linetype_title="")
+
+# CP
+coverage_cp_rawAdj_subgroups_top20global <- plotCoverageRawAdj(kbayes_raw_coverage_subgroups %>% filter(subgroup %in% c("CP")), kbayes_adj_coverage_subgroups %>% filter(subgroup %in% c("CP")), kbayes$locus_rank, maxRank=20, xintercept=c(5,10,15,20), cols=group_cols, col_title = "", linetype_title="")
+
+# South Asia
+coverage_SAsia_rawAdj_subgroups_top20global <- plotCoverageRawAdj(kbayes_raw_coverage %>% filter(subgroup=="South Asia"), kbayes_adj_coverage %>% filter(subgroup=="South Asia"), kbayes$locus_rank, maxRank=20, cols=region_cols, linetype_title = "")
+
+# South Africa
+coverage_SA_rawAdj_subgroups_top20global <- plotCoverageRawAdj(kbayes_raw_coverage %>% filter(subgroup=="Southern Africa"), kbayes_adj_coverage %>% filter(subgroup=="Southern Africa"), kbayes$locus_rank, maxRank=20, cols=region_cols, linetype_title = "")
+
+# West Africa
+coverage_WA_rawAdj_subgroups_top20global <- plotCoverageRawAdj(kbayes_raw_coverage %>% filter(subgroup=="Western Africa"), kbayes_adj_coverage %>% filter(subgroup=="Western Africa"), kbayes$locus_rank, maxRank=20, cols=region_cols, linetype_title = "")
+
+# East Africa
+coverage_EA_rawAdj_subgroups_top20global <- plotCoverageRawAdj(kbayes_raw_coverage %>% filter(subgroup=="Eastern Africa"), kbayes_adj_coverage %>% filter(subgroup=="Eastern Africa"), kbayes$locus_rank, maxRank=20, cols=region_cols, linetype_title = "") 
+```
+
+``` {r}
+(coverage_rawAdj_subgroups_top20global + ggtitle("All") +
+   coverage_fatal_rawAdj_subgroups_top20global + ggtitle("Fatal") + coverage_esbl_rawAdj_subgroups_top20global + ggtitle("ESBL") + coverage_cp_rawAdj_subgroups_top20global + ggtitle("CP") + coverage_SAsia_rawAdj_subgroups_top20global + ggtitle("S. Asia") + coverage_EA_rawAdj_subgroups_top20global + ggtitle("E. Africa") + coverage_SA_rawAdj_subgroups_top20global + ggtitle("S. Africa") + coverage_WA_rawAdj_subgroups_top20global +ggtitle("W. Africa")) + plot_layout(guides="collect", nrow=2, ncol=4) & theme(legend.position = 'none')
+
+ggsave("figures/AppendixFigS2.8_K_prevAdj_coverageRawAdj_top20global.pdf", width=12, height=8, device = cairo_pdf, family = "Arial Unicode MS")
+ggsave("figures/AppendixFigS2.8_K_prevAdj_coverageRawAdj_top20global.png", width=12, height=8)
 ```
 
 # take top 8 per region - Fig3aii and Fig3bii
@@ -649,7 +686,7 @@ coverage_globalTop20_subgroups <- plotCoverageRawAdj(kbayes_raw_coverage_subgrou
 K_rank_SA <- kbayes$region_est %>% ungroup %>% filter(subgroup=="Southern Africa") %>% arrange(-mean) %>% mutate(rank=row_number())
 K_rank_WA <- kbayes$region_est %>% ungroup %>% filter(subgroup=="Western Africa") %>% arrange(-mean) %>% mutate(rank=row_number())
 K_rank_EA <- kbayes$region_est %>% ungroup %>% filter(subgroup=="Eastern Africa") %>% arrange(-mean) %>% mutate(rank=row_number())
-K_rank_SAs <- kbayes$region_est %>% ungroup %>% filter(subgroup=="Southern Asia") %>% arrange(-mean) %>% mutate(rank=row_number())
+K_rank_SAs <- kbayes$region_est %>% ungroup %>% filter(subgroup=="South Asia") %>% arrange(-mean) %>% mutate(rank=row_number())
 
 
 # get top-8 within each region - gives 20 loci
@@ -664,7 +701,7 @@ k_rank_region8 <- kbayes$locus_rank[kbayes$locus_rank$locus %in% topN,] %>%
 
 # calculate global & regional coverage for these K - Fig 3bii
 kbayes_raw_coverage_top8perRegion <- getCumulativeCoverageGlobalRegional(kbayes_raw, k_rank_region8) %>%
-  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
 
 coverage_global_top8perRegion <- plotCoverage(kbayes_raw_coverage_top8perRegion, k_rank_region8, maxRank=nrow(k_rank_region8), cols=region_cols)
 
@@ -689,7 +726,7 @@ coverage_subgroups_top8perRegion
 # add cluster-adjusted
 # calculate global & regional coverage for these K - Fig 3bii
 kbayes_adj_coverage_top8perRegion <- getCumulativeCoverageGlobalRegional(kbayes, k_rank_region8) %>%
-  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
 
 coverage_rawAdj_global_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_top8perRegion, kbayes_adj_coverage_top8perRegion, k_rank_region8, maxRank=nrow(k_rank_region8), cols=region_cols, linetype_title = "")
 
@@ -729,7 +766,7 @@ coverage_esbl_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_co
 coverage_cp_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_subgroups_top8perRegion %>% filter(subgroup %in% c("CP")), kbayes_adj_coverage_subgroups_top8perRegion %>% filter(subgroup %in% c("CP")), k_rank_region8, maxRank=20, xintercept=c(5,10,15,20), cols=group_cols, col_title = "", linetype_title="")
 
 # South Asia
-coverage_SAsia_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_top8perRegion %>% filter(subgroup=="Southern Asia"), kbayes_adj_coverage_top8perRegion %>% filter(subgroup=="Southern Asia"), k_rank_region8, maxRank=nrow(k_rank_region8), cols=region_cols, linetype_title = "")
+coverage_SAsia_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_top8perRegion %>% filter(subgroup=="South Asia"), kbayes_adj_coverage_top8perRegion %>% filter(subgroup=="South Asia"), k_rank_region8, maxRank=nrow(k_rank_region8), cols=region_cols, linetype_title = "")
 
 # South Africa
 coverage_SA_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_coverage_top8perRegion %>% filter(subgroup=="Southern Africa"), kbayes_adj_coverage_top8perRegion %>% filter(subgroup=="Southern Africa"), k_rank_region8, maxRank=nrow(k_rank_region8), cols=region_cols, linetype_title = "")
@@ -745,8 +782,8 @@ coverage_EA_rawAdj_subgroups_top8perRegion <- plotCoverageRawAdj(kbayes_raw_cove
 (coverage_rawAdj_subgroups_top8perRegion + ggtitle("All") +
    coverage_fatal_rawAdj_subgroups_top8perRegion + ggtitle("Fatal") + coverage_esbl_rawAdj_subgroups_top8perRegion + ggtitle("ESBL") + coverage_cp_rawAdj_subgroups_top8perRegion + ggtitle("CP") + coverage_SAsia_rawAdj_subgroups_top8perRegion + ggtitle("S. Asia") + coverage_EA_rawAdj_subgroups_top8perRegion + ggtitle("E. Africa") + coverage_SA_rawAdj_subgroups_top8perRegion + ggtitle("S. Africa") + coverage_WA_rawAdj_subgroups_top8perRegion +ggtitle("W. Africa")) + plot_layout(guides="collect", nrow=2, ncol=4) & theme(legend.position = 'none')
 
-ggsave("figures/FigX_K_prevAdj_coverageRawAdj.pdf", width=12, height=8, device = cairo_pdf, family = "Arial Unicode MS")
-ggsave("figures/FigX_K_prevAdj_coverageRawAdj.png", width=12, height=8)
+ggsave("figures/AppendixFigS2.9_K_prevAdj_coverageRawAdj_top8perRegion.pdf", width=12, height=8, device = cairo_pdf, family = "Arial Unicode MS")
+ggsave("figures/AppendixFigS2.9_K_prevAdj_coverageRawAdj_top8perRegion.png", width=12, height=8)
 ```
 
 
@@ -821,7 +858,7 @@ table2 <- esbl_counts %>% mutate(cases="  ESBL infections") %>%
   mutate(cases=fct_relevel(cases,c("All", "  Fatal infections", "  ESBL infections", "  CP infections")))
 
 # sort function isn't working when ordering region factor using fct_relevel
-table2$Region <- factor(table2$Region, levels = c("Global", "Eastern Africa", "Southern Africa", "Western Africa", "Southern Asia"))
+table2$Region <- factor(table2$Region, levels = c("Global", "Eastern Africa", "Southern Africa", "Western Africa", "South Asia"))
 table2$Counts <- factor(table2$Counts, levels = c("raw", "adj"))
 
 table2 <- table2 %>%
@@ -835,10 +872,8 @@ table2 <- table2 %>%
   ungroup %>% select(-Region)
 
 # write out raw to main Table 2
-write_tsv(table2 %>% filter(Counts=="raw") %>% select(-Counts), file="tables/Table2_coverage.tsv")
+write_tsv(table2 %>% select(-Counts), file="tables/TableS4_coverage_rawAdj_globalTop20K.tsv")
 
-# write out cluster-adjusted to appendix
-write_tsv(table2 %>% filter(Counts=="adj") %>% select(-Counts), file="tables/TableS4_coverage_adjusted.tsv")
 ```
 
 
@@ -892,7 +927,7 @@ tableS4 <- esbl_counts %>% mutate(cases="  ESBL infections") %>%
   mutate(cases=fct_relevel(cases,c("All", "  Fatal infections", "  ESBL infections", "  CP infections")))
 
 # sort function isn't working when ordering region factor using fct_relevel
-tableS4$Region <- factor(tableS4$Region, levels = c("Global", "Eastern Africa", "Southern Africa", "Western Africa", "Southern Asia"))
+tableS4$Region <- factor(tableS4$Region, levels = c("Global", "Eastern Africa", "Southern Africa", "Western Africa", "South Asia"))
 tableS4$Counts <- factor(tableS4$Counts, levels = c("raw", "adj"))
 
 tableS4 <- tableS4 %>%
@@ -905,32 +940,32 @@ tableS4 <- tableS4 %>%
   rename(Data=cases) %>%
   ungroup %>% select(-Region)
   
-write_tsv(tableS4, file="tables/TableS4_coverageSet2.tsv")
+write_tsv(tableS4, file="tables/Table2_coverage_rawAdj_top8perRegion.tsv")
 ```
 
 # Fig S4 - coverage for region-focused K sets
 ``` {r}
 # ranked by Southern Africa
 kbayes_raw_coverage_top20SA <- getCumulativeCoverageGlobalRegional(kbayes_raw, K_rank_SA %>% select(locus, rank), maxRank=20) %>%
-  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
 
 kbayes_raw_coverage_globalRegional_top20SA <- plotCoverage(kbayes_raw_coverage_top20SA, K_rank_SA %>% select(locus, rank), maxRank=20, cols=region_cols)
 
 # ranked by Eastern Africa
 kbayes_raw_coverage_top20EA <- getCumulativeCoverageGlobalRegional(kbayes_raw, K_rank_EA %>% select(locus, rank), maxRank=20) %>%
-  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
 
 kbayes_raw_coverage_globalRegional_top20EA <- plotCoverage(kbayes_raw_coverage_top20EA, K_rank_EA %>% select(locus, rank), maxRank=20, cols=region_cols)
 
 # ranked by Western Africa
 kbayes_raw_coverage_top20WA <- getCumulativeCoverageGlobalRegional(kbayes_raw, K_rank_WA %>% select(locus, rank), maxRank=20) %>%
-  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
 
 kbayes_raw_coverage_globalRegional_top20WA <- plotCoverage(kbayes_raw_coverage_top20WA, K_rank_WA %>% select(locus, rank), maxRank=20, cols=region_cols)
 
-# ranked by Southern Asia
+# ranked by South Asia
 kbayes_raw_coverage_top20SAs <- getCumulativeCoverageGlobalRegional(kbayes_raw, K_rank_SAs %>% select(locus, rank), maxRank=20) %>%
-  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
 
 kbayes_raw_coverage_globalRegional_top20SAs <- plotCoverage(kbayes_raw_coverage_top20SAs, K_rank_SAs %>% select(locus, rank), maxRank=20, cols=region_cols)
 
@@ -979,7 +1014,7 @@ k_rank_region8 %>% left_join(kbayes$locus, by="locus") %>% filter(rank.y>20)
 ``` {r}
 
 obayes_raw_coverage <- getCumulativeCoverageGlobalRegional(obayes_raw, obayes$locus_rank) %>%
-  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
 
 ocoverage_globalTop10_globalRegional <- plotCoverage(obayes_raw_coverage, obayes$locus_rank, maxRank=10, xintercept=c(4,8), cols=region_cols, col_title = "d) Region")
 
@@ -987,7 +1022,7 @@ ocoverage_globalTop10_globalRegional
 
 # cluster-adjusted
 obayes_adj_coverage <- getCumulativeCoverageGlobalRegional(obayes, obayes$locus_rank) %>%
-  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))
 
 ocoverage_rawAdj_globalTop10_globalRegional <- plotCoverageRawAdj(obayes_raw_coverage, obayes_adj_coverage, obayes$locus_rank, maxRank=10, xintercept=c(4,8), cols=region_cols, col_title = "d) Region", linetype_title = "")
 
@@ -1086,11 +1121,26 @@ fatal_ocov_rawAdj <- plotCoverageRawAdj(obayes_raw_coverage_subgroups %>% filter
 
 ```
 
+# raw vs cluster-adjusted coverage global top20 K
 ``` {r}
-(ocov_rawAdj + ggtitle("All") + fatal_ocov_rawAdj + ggtitle("Fatal") + esbl_ocov_rawAdj + ggtitle("ESBL") + cp_ocov_rawAdj + ggtitle("CP")) + plot_layout(guides="collect", axes="collect", nrow=1, ncol=4) & theme(legend.position = 'none')
+# South Asia
+ocoverage_SAsia_rawAdj_subgroups_top20global <- plotCoverageRawAdj(obayes_raw_coverage_subgroups %>% filter(subgroup=="South Asia"), obayes_adj_coverage_subgroups %>% filter(subgroup=="South Asia"), kbayes$locus_rank, maxRank=10, xintercept=c(5,10), cols=region_cols, linetype_title = "")
 
-ggsave("figures/FigX_O_prevAdj_coverageRawAdj.pdf", width=12, height=4, device = cairo_pdf, family = "Arial Unicode MS")
-ggsave("figures/FigX_O_prevAdj_coverageRawAdj.png", width=12, height=4)
+# South Africa
+ocoverage_SA_rawAdj_subgroups_top20global <- plotCoverageRawAdj(obayes_raw_coverage_subgroups %>% filter(subgroup=="Southern Africa"), obayes_adj_coverage_subgroups %>% filter(subgroup=="Southern Africa"), kbayes$locus_rank, maxRank=10, xintercept=c(5,10), cols=region_cols, linetype_title = "")
+
+# West Africa
+ocoverage_WA_rawAdj_subgroups_top20global <- plotCoverageRawAdj(obayes_raw_coverage_subgroups %>% filter(subgroup=="Western Africa"), obayes_adj_coverage_subgroups %>% filter(subgroup=="Western Africa"), kbayes$locus_rank, maxRank=10, xintercept=c(5,10), cols=region_cols, linetype_title = "")
+
+# East Africa
+ocoverage_EA_rawAdj_subgroups_top20global <- plotCoverageRawAdj(obayes_raw_coverage_subgroups %>% filter(subgroup=="Eastern Africa"), obayes_adj_coverage_subgroups %>% filter(subgroup=="Eastern Africa"), kbayes$locus_rank, maxRank=10, xintercept=c(5,10), cols=region_cols, linetype_title = "") 
+```
+
+``` {r}
+(ocov_rawAdj + ggtitle("All") + fatal_ocov_rawAdj + ggtitle("Fatal") + esbl_ocov_rawAdj + ggtitle("ESBL") + cp_ocov_rawAdj + ggtitle("CP") + coverage_SAsia_rawAdj_subgroups_top20global + ggtitle("S. Asia") + coverage_SA_rawAdj_subgroups_top20global + ggtitle("S. Africa") + coverage_EA_rawAdj_subgroups_top20global + ggtitle("E. Africa") + coverage_WA_rawAdj_subgroups_top20global + ggtitle("W. Africa")) + plot_layout(guides="collect", axes="collect", nrow=2, ncol=4) & theme(legend.position = 'none')
+
+ggsave("figures/AppendixFigS2.10_O_prevAdj_coverageRawAdj.pdf", width=12, height=8, device = cairo_pdf, family = "Arial Unicode MS")
+ggsave("figures/AppendixFigS2.10_O_prevAdj_coverageRawAdj.png", width=12, height=8)
 ```
 
 # numbers for text - O prevalence and coverage
@@ -1110,12 +1160,12 @@ obayes$region_est %>% filter(locus=="OL13")
 # coverage
 obayes_raw_coverage
 
-# STs with O4 or O2a in Southern Asia
-data_NNS_sites10 %>% filter(Region=="Southern Asia" & O_genotype=="O4") %>% group_by(ST, K_locus)%>% count()
-data_NNS_sites10 %>% filter(Region=="Southern Asia" & O_genotype=="O4") %>% group_by(ST, K_locus, Site)%>% count()
+# STs with O4 or O2a in South Asia
+data_NNS_sites10 %>% filter(Region=="South Asia" & O_genotype=="O4") %>% group_by(ST, K_locus)%>% count()
+data_NNS_sites10 %>% filter(Region=="South Asia" & O_genotype=="O4") %>% group_by(ST, K_locus, Site)%>% count()
 
-data_NNS_sites10 %>% filter(Region=="Southern Asia" & O_genotype=="O2a") %>% group_by(ST, K_locus)%>% count()
-data_NNS_sites10 %>% filter(Region=="Southern Asia" & O_genotype=="O2a") %>% group_by(ST, K_locus, Site)%>% count()
+data_NNS_sites10 %>% filter(Region=="South Asia" & O_genotype=="O2a") %>% group_by(ST, K_locus)%>% count()
+data_NNS_sites10 %>% filter(Region=="South Asia" & O_genotype=="O2a") %>% group_by(ST, K_locus, Site)%>% count()
 
 data_NNS_sites10 %>% filter(Region=="Southern Africa" & O_genotype=="O5") %>% group_by(ST, K_locus)%>% count()
 data_NNS_sites10 %>% filter(Region=="Southern Africa" & O_genotype=="O5") %>% group_by(ST, K_locus, Site, Country)%>% count()
@@ -1176,7 +1226,7 @@ tableS5 <- esbl_counts %>% mutate(cases="  ESBL infections") %>%
   mutate(cases=fct_relevel(cases,c("All", "  Fatal infections", "  ESBL infections", "  CP infections")))
 
 # sort function isn't working when ordering region factor using fct_relevel
-tableS5$Region <- factor(tableS5$Region, levels = c("Global", "Eastern Africa", "Southern Africa", "Western Africa", "Southern Asia"))
+tableS5$Region <- factor(tableS5$Region, levels = c("Global", "Eastern Africa", "Southern Africa", "Western Africa", "South Asia"))
 tableS5$Counts <- factor(tableS5$Counts, levels = c("raw", "adj"))
 
 tableS5 <- tableS5 %>%
@@ -1188,7 +1238,7 @@ tableS5 <- tableS5 %>%
   rename(Data=cases) %>%
   ungroup %>% select(-Region)
   
-write_tsv(tableS5, file="tables/TableS5_coverage.tsv")
+write_tsv(tableS5, file="tables/TableS5_coverage_O.tsv")
 ```
 
 # numbers for text - effect of cluster adjustment
@@ -1313,7 +1363,8 @@ loo_O <- read_csv("outputs_LOO/O_Full_ALL_adj_28_LOO_SPINZ_global_estimates.csv"
       mutate(locus=replace(locus, locus=="OL13", "O13")) %>%
       mutate(locus=replace(locus, locus=="OL102", "O14")) %>%
       mutate(locus=replace(locus, locus=="OL103", "O10")) %>%
-      mutate(locus=replace(locus, locus=="OL104", "O15"))
+      mutate(locus=replace(locus, locus=="OL104", "O15")) %>%
+    mutate(subgroup=if_else(subgroup=="Southern Asia", "South Asia", subgroup))
 
 ```
 
@@ -1326,7 +1377,6 @@ loo_O_plot <- loo_O %>%
   geom_text(aes(y=locus, x=Study, label=round(rank)), size=4) +
   scale_y_discrete(limits=rev(obayes$locus_rank$locus[1:9])) + 
   scale_x_discrete(limits=rev(unique(loo_O$Study))) + # keep the order as per tibble, starting with 'None'
-  #scale_fill_gradient("Global\nprevalence (%)", low = "white", high = "#081d58")
   scale_fill_manual(values = c(rev(brewer.pal(5, "Reds")), rev(brewer.pal(6, "Blues")[-1]))) +
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, 
@@ -1420,7 +1470,8 @@ loo <- read_csv("outputs_LOO/K_Full_ALL_adj_28_LOO_SPINZ_global_estimates.csv") 
   mutate(Study="SPINZ") %>% 
   arrange(-mean) %>%
   mutate(rank = min_rank(desc(mean))) %>% 
-  bind_rows(loo) 
+  bind_rows(loo) %>%
+  mutate(subgroup=if_else(subgroup=="Southern Asia", "South Asia", subgroup))
 
 ```
 
@@ -1436,7 +1487,6 @@ loo_k_ranks <- loo %>%
   geom_text(aes(y=locus, x=Study, label=round(rank)), size=4) +
   scale_y_discrete(limits=rev(kbayes$locus_rank$locus[kbayes$locus_rank$locus %in% top20_sens])) + 
   scale_x_discrete(limits=rev(unique(loo$Study))) + # keep the order as per tibble, starting with 'None'
-  #scale_fill_gradient("Global\nprevalence (%)", low = "white", high = "#081d58")
   scale_fill_manual(values = c(rev(brewer.pal(5, "Reds")), rev(brewer.pal(6, "Purples")[-1]), rev(brewer.pal(6, "Blues")[-1]), rev(brewer.pal(5, "Greens")))) +
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, 
@@ -1478,14 +1528,14 @@ for (study in studies) {
 loo_kbayes_raw <- parseModelledEstimates(global_post=paste0("outputs_LOO/K_Full_ALL_raw_28_LOO_",study,"_posterior_global.csv.gz"), region_post=paste0("outputs_LOO/K_Full_ALL_raw_28_LOO_",study,"_posterior_subgroup.csv.gz"))
 
 this_coverage <- getCumulativeCoverageGlobalRegional(loo_kbayes_raw, kbayes$locus_rank) %>%
-  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa"))) %>%
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa"))) %>%
   mutate(Study=study)
 
 loo_k_coverage <- bind_rows(loo_k_coverage, this_coverage)
 }
 
 loo_k_coverage_plot <- loo_k_coverage %>% 
-  mutate(subgroup=fct_relevel(subgroup,rev(c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))) %>%
+  mutate(subgroup=fct_relevel(subgroup,rev(c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))) %>%
   bind_rows(kbayes_raw_coverage %>% mutate(Study="None")) %>% 
   filter(rank==20) %>% 
   mutate(Study=if_else(Study=="NeoOBS", "NeoOBS-India", Study)) %>%
@@ -1534,7 +1584,7 @@ for (study in studies) {
 loo_obayes_raw <- parseModelledEstimates(global_post=paste0("outputs_LOO/O_Full_ALL_raw_28_LOO_",study,"_posterior_global.csv.gz"), region_post=paste0("outputs_LOO/O_Full_ALL_raw_28_LOO_",study,"_posterior_subgroup.csv.gz"), fixOnames = T)
 
 this_coverage <- getCumulativeCoverageGlobalRegional(loo_obayes_raw, obayes$locus_rank) %>%
-  mutate(subgroup=fct_relevel(subgroup,c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa"))) %>%
+  mutate(subgroup=fct_relevel(subgroup,c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa"))) %>%
   mutate(Study=study)
 
 loo_o_coverage <- bind_rows(loo_o_coverage, this_coverage)
@@ -1544,7 +1594,7 @@ loo_o_coverage <- bind_rows(loo_o_coverage, this_coverage)
 
 ``` {r loo_o_coverage_plot4}
 loo_o_coverage_plot4 <- loo_o_coverage %>% 
-  mutate(subgroup=fct_relevel(subgroup,rev(c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))) %>%
+  mutate(subgroup=fct_relevel(subgroup,rev(c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))) %>%
   bind_rows(obayes_raw_coverage %>% mutate(Study="None")) %>% 
   filter(rank==4) %>% 
   mutate(Study=if_else(Study=="NeoOBS", "NeoOBS-India", Study)) %>%
@@ -1568,7 +1618,7 @@ loo_o_coverage_plot4 <- loo_o_coverage %>%
 
 ``` {r loo_o_coverage_plot5}
 loo_o_coverage_plot5 <- loo_o_coverage %>% 
-  mutate(subgroup=fct_relevel(subgroup,rev(c("Global", "Southern Asia", "Eastern Africa", "Southern Africa", "Western Africa")))) %>%
+  mutate(subgroup=fct_relevel(subgroup,rev(c("Global", "South Asia", "Eastern Africa", "Southern Africa", "Western Africa")))) %>%
   bind_rows(obayes_raw_coverage %>% mutate(Study="None")) %>% 
   filter(rank==5) %>% 
   mutate(Study=if_else(Study=="NeoOBS", "NeoOBS-India", Study)) %>%
