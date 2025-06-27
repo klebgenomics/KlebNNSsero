@@ -1,6 +1,6 @@
 # Meta-analysis of K and O serotype distributions and coverage, from Klebsiella pneumoniae neonatal sepsis in African and South Asian countries
 
-This repository includes data and code from the paper: "Distribution of capsule and O types in Klebsiella pneumoniae causing neonatal sepsis in Africa and Asia: Bayesian analysis of genome-predicted serotype prevalence and coverage to inform vaccine development" (Stanton et al, 2025).
+This repository includes data and code from the paper: "Distribution of capsule and O types in Klebsiella pneumoniae causing neonatal sepsis in Africa and South Asia: meta-analysis of genome-predicted serotype prevalence and potential vaccine coverage" (Stanton et al, 2025).
 
 Inputs to the modelling are in `data_*/`, model outputs are in `outputs_*/`, and the fitted models (R objects) are available in figshare.
 
@@ -10,15 +10,17 @@ Directories `figures/` and `tables/` contain all figures and tables from the pap
 
 ## Figures and tables from the paper
 
-Directories `figures` and `tables` contain all figures and tables from the paper.
+Directories `figures` and `tables` contain all figures and tables from the paper, including supporting and appendix files.
 
 The code to generate these are in the following R markdown files, which draw on functions in `seroepi_functions.R`:
 
-`DataAnalysis.Rmd` - R code to generate figures and tables based on line-list data
+`DataAnalysis.Rmd` - R code to generate figures and tables based on line-list data (data in `tables/TableS3_sampleInfo.tsv`)
 
 `DataAnalysis_ModelledEstimates.Rmd` - R code to generate figures and tables based on modelled estimates of K/O prevalence (see details of Bayesian modelling below)
 
-`DataAnalysis_Longitudinal.Rmd` - R code to generate Figure S6, based on longitudinal line-list data from 3 sites
+`DataAnalysis_Longitudinal.Rmd` - R code to generate Figure S6, based on longitudinal line-list data from 3 sites (data in tables/longitudinal_data.tsv)
+
+An [interactive web application](https://klebsiella.shinyapps.io/neonatal/), implemented in R shiny, is also available to (i) explore the modelled estimates for prevalence and coverage data, and (ii) undertake additional analyses of the raw data in Table S3 (e.g. to explore crude pooled estimates of prevalence and coverage for different subsets of loci and/or different subsets of samples). 
 
 ## Model Run File Explanation
 
@@ -170,3 +172,14 @@ The file begins by loading the necessary libraries for data manipulation and Bay
 
 5.  **Saving the Results:**\
     The final summarized results are printed to the console and saved as a CSV file (`results_table.csv`) for further review and analysis.
+
+
+## Citation
+
+If you use the data, code, figures or tables presented here please cite this repository and the paper:
+
+"Distribution of capsule and O types in Klebsiella pneumoniae causing neonatal sepsis in Africa and South Asia: meta-analysis of genome-predicted serotype prevalence and potential vaccine coverage". 
+
+Thomas D Stanton/Shaun P Keegan, Jabir A Abdulahi, Anne V Amulele, Matthew Bates, Eva Heinz, Yogesh Hooda, Weiming Hu, Kajal Jain, Samiah Kanwar, Rindidzani Magobo, Courtney P Olwagen, John M Tembo, Tolbert Sonda, Jonathan Strysko, Caroline C Tigoi, Sameen Ahmad Amin, Kyle Bittinger, Jennifer Cornick, Ebenezer Foster-Nyarko, Wilson Gumbi, Aneeta Hotwani, Naveed Iqbal, Steven M Jones, Furqan Kabir, Waqasuddin Khan, Chileshe L Musyani, Carolyn M McGann, Varsha Mittal, Ahmed M Moustafa, Patrick Musicha, James CL Mwansa, Moreka L Ndumba, Erkison E Odih, Donwilliams O Omuoyo, Oliver Pearse, Laura T Phillips, Paul J Planet, Aniqa Abdul Rasool, Charlene MC Rodrigues, Kirsty Sands, Arif M Tanmoy, Erin Theiller, Allan M Zuza, Sulagna Basu, Grace J Chan, Kenneth C Iregbu, Jean-Baptiste Mazarati, ​​Semaria Solomon Alemayehu, Timothy R Walsh, Rabaab Zahra, Angela Dramowski, Sombo Fwoloshi, Appiah-Korang Labi, Lola Madrid, Noah Obeng-Nkrumah, David Ojok, Boaz D Wadugu, Andrew C Whitelaw, Adhisivam Bethou, Anudita Bhargava, Atul Jindal, Ruchi N Nanavati, Priyanka S Prasad, Apurba Sastry, Joveria Q Farooqi, Najia Ghanchi, Fyezah Jehan, Erum Khan, Ramesh K Agarwal, Alexander M Aiken, James A Berkley, Susan E Coffin, Nicholas A Feasey, Nelesh P Govender, Davidson H Hamer, Shabir A Madhi, M Imran Nisar, Samir K Saha, Senjuti Saha, M Jeeva Sankar, Kelly L Wyres/Kathryn E Holt
+
+medRxiv, 2025
