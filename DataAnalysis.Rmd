@@ -34,7 +34,7 @@ region_cols <- c(`South Asia` ="#D81B60", `Western Africa`="#1E88E5", `Eastern A
 
 ## load data on included samples - Table S3 (includes alternative clusters)
 ``` {r}
-data_NNS_sites10 <- read_tsv("tables/TableS3_IsolatesIncluded_NEEDSACCESSIONS.tsv") %>%
+data_NNS_sites10 <- read_tsv("tables/TableS3_sampleInfo.tsv") %>%
   mutate(Study=if_else(Study=="GBS", "GBS-COP", Study)) %>%
   mutate(Region=if_else(Region=="Southern Asia", "South Asia", Region))
 ```
@@ -168,7 +168,7 @@ study_summary <- data_NNS_sites10 %>%
 
 # write to file
 study_summary %>% 
-  write_csv(file="tables/TableS2_studyInfo.csv")
+  write_csv(file="tables/studyInfo_forS2.csv")
 ```
 
 
@@ -207,7 +207,7 @@ country_summary <- data_NNS_sites10 %>%
 
 
 # write to file
-write.csv(country_summary, file="tables/Table1_country_study_breakdown.csv", row.names=F)
+write_tsv(country_summary, file="tables/Table1_country_study_breakdown.tsv")
 ```
 
 

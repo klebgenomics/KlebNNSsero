@@ -36,7 +36,7 @@ group_cols <- c(All="black", Fatal ="#D81B60", ESBL="#1E88E5", CP="#FFC107")
 
 ## load data on included samples - Table S3
 ``` {r}
-data_NNS_sites10 <- read_tsv("tables/TableS3_IsolatesIncluded_NEEDSACCESSIONS.tsv") %>%
+data_NNS_sites10 <- read_tsv("tables/TableS3_sampleInfo.tsv") %>%
   mutate(Study=if_else(Study=="GBS", "GBS-COP", Study)) %>%
   mutate(Region=if_else(Region=="Southern Asia", "South Asia", Region))
 ```
