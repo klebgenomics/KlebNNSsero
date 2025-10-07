@@ -73,6 +73,7 @@ k_prev_global_dist + k_prev_region_heatmap
 
 ggsave("figures/Fig2_K_global_regional_Kadj.pdf", width=8, height=6)
 ggsave("figures/Fig2_K_global_regional_Kadj.png", width=8, height=6)
+ggsave("figures/Fig2_K_global_regional_Kadj.tiff", width=8, height=6)
 ```
 
 
@@ -95,6 +96,7 @@ k_prev_region_heatmap_all <- region_heatmap(kbayes$region_est, kbayes$global_est
 k_prev_global_dist_all + k_prev_region_heatmap_all
 ggsave("figures/FigS2_K_global_regional_Kadj.pdf", width=8, height=10)
 ggsave("figures/FigS2_K_global_regional_Kadj.png", width=8, height=10)
+ggsave("figures/FigS2_K_global_regional_Kadj.tiff", width=8, height=10)
 ```
 
 
@@ -117,7 +119,7 @@ for (k in kbayes$locus_rank$locus[1:30]) {
   d <- data_NNS_sites10 %>%
     mutate(k=if_else(K_locus==k, 1, 0)) %>%
     select(k, Year, Region)
-  m <- summary(logistf(k~Year+Region, data=d))
+  m <- summary(logistf(k~Year+Region, data=d, pl=FALSE))
   result <- rbind(result, cbind(coef=m$coefficients, p=m$prob, locus=k))
 }
 
@@ -164,6 +166,7 @@ kbayes$region_post %>%
 ``` {r}
 ggsave("figures/FigS3_RegionalKBayesDist.pdf", width=6, height=9)
 ggsave("figures/FigS3_RegionalKBayesDist.png", width=6, height=9)
+ggsave("figures/FigS3_RegionalKBayesDist.tiff", width=6, height=9)
 ```
 
 
@@ -257,6 +260,7 @@ obayes$region_post %>%
 ``` {r}
 ggsave("figures/FigS5_RegionalOBayesDist.pdf", width=6, height=5, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave("figures/FigS5_RegionalOBayesDist.png", width=6, height=5)
+ggsave("figures/FigS5_RegionalOBayesDist.tiff", width=6, height=5)
 ```
 
 
@@ -748,6 +752,7 @@ kbayes_adj_coverage_subgroups_top8perRegion <- kbayes_esbl_adj_min10perSite_cove
 
 ggsave("figures/Fig3_Kcoverage_raw.pdf", width=8, height=8)
 ggsave("figures/Fig3_Kcoverage_raw.png", width=8, height=8)
+ggsave("figures/Fig3_Kcoverage_raw.tiff", width=8, height=8)
 ```
 
 
@@ -977,6 +982,7 @@ kbayes_raw_coverage_globalRegional_top20SAs <- plotCoverage(kbayes_raw_coverage_
 
 ggsave("figures/FigS4_KcoverageRaw_top20PerRegion.pdf", width=8, height=8)
 ggsave("figures/FigS4_KcoverageRaw_top20PerRegion.png", width=8, height=8)
+ggsave("figures/FigS4_KcoverageRaw_top20PerRegion.tiff", width=8, height=8)
 ```
 
 # numbers for text - K coverage
@@ -1091,6 +1097,7 @@ o_coverage_globalTop10_subgroups
 
 ggsave("figures/Fig4_O_prevAdj_coverageRaw.pdf", width=8, height=8, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave("figures/Fig4_O_prevAdj_coverageRaw.png", width=8, height=8)
+ggsave("figures/Fig4_O_prevAdj_coverageRaw.tiff", width=8, height=8)
 ```
 
 

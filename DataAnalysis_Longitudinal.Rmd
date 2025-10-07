@@ -202,5 +202,6 @@ timeline_plot_longData / (coverage_plot_longPre_globalRank_country + ggtitle("K 
 
 ggsave("figures/FigS6_Longitudinal.pdf", height=9, width=8, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave("figures/FigS6_Longitudinal.png", height=9, width=8)
+ggsave("figures/FigS6_Longitudinal.tiff", height=9, width=8)
 ```
 

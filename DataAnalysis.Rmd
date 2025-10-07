@@ -151,6 +151,7 @@ patchwork::wrap_elements(panel=timeline_barplot) / patchwork::wrap_elements(se_r
 
 ggsave("figures/Fig1_timelineRegionCountryStudy_siteMap.pdf", width=7, height=7)
 ggsave("figures/Fig1_timelineRegionCountryStudy_siteMap.png", width=7, height=7)
+ggsave("figures/Fig1_timelineRegionCountryStudy_siteMap.tiff", width=7, height=7)
 
 ```
 
@@ -313,6 +314,7 @@ k_raw_bar_ST + k_raw_bar + ggtitle("a) Crude K frequency") + KL_country_jitterO 
 
 ggsave(file="figures/AppendixFigS1.1_raw_K_country_O.png", width=9, height=11)
 ggsave(file="figures/AppendixFigS1.1_raw_K_country_O.pdf", width=9, height=11, device = cairo_pdf, family = "Arial Unicode MS") # pdf won't render symbols in legend correctly
+ggsave(file="figures/AppendixFigS1.1_raw_K_country_O.tiff", width=9, height=11)
 ```
 
 
@@ -340,6 +342,7 @@ clones_site_year
 ``` {r}
 ggsave(file="figures/AppendixFigS1.2_clones_site_year.pdf", width=9, height=12, device = cairo_pdf, family = "Arial Unicode MS")
 ggsave(file="figures/AppendixFigS1.2_clones_site_year.png", width=9, height=12)
+ggsave(file="figures/AppendixFigS1.2_clones_site_year.tiff", width=9, height=12)
 ```
 
 # compare crude K prevalence at different time thresholds
@@ -422,6 +425,7 @@ temporal_cluster_threshold_proportion + temporal_cluster_threshold_rank
 
 ggsave(file="figures/AppendixFigS2.6_ClusterDaysThreshold.pdf", width=9, height=12)
 ggsave(file="figures/AppendixFigS2.6_ClusterDaysThreshold.png", width=9, height=12)
+ggsave(file="figures/AppendixFigS2.6_ClusterDaysThreshold.tiff", width=9, height=12)
 
 ```
 
@@ -523,6 +527,7 @@ snp_cluster_threshold_proportion + snp_cluster_threshold_rank
 
 ggsave(file="figures/AppendixFigS2.7_ClusterSNPsThreshold.pdf", width=9, height=12)
 ggsave(file="figures/AppendixFigS2.7_ClusterSNPsThreshold.png", width=9, height=12)
+ggsave(file="figures/AppendixFigS2.7_ClusterSNPsThreshold.tiff", width=9, height=12)
 
 ```
 
