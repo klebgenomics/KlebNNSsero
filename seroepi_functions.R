@@ -453,6 +453,7 @@ plotCoverage <- function(coverage, ranks, maxRank=20, y_title="Cumulative covera
     geom_hline(yintercept=70, linetype=2) + 
     geom_vline(xintercept=xintercept, col="grey") +
     geom_line(aes(col=subgroup), lwd=1) + 
+    geom_point(aes(col=subgroup)) + 
     geom_ribbon(aes(ymin=lower*100, ymax=upper*100, fill=subgroup), alpha=alpha, linetype=0) +
     theme_bw() +
     ylim(0,100) + 
@@ -487,6 +488,7 @@ plotCoverageRawAdj <- function(coverage_raw, coverage_adj, ranks, maxRank=20, y_
     geom_vline(xintercept=xintercept, col="grey") +
     geom_vline(xintercept=xintercept, col="grey") +
     geom_line(aes(color = subgroup, linetype = type, group = interaction(subgroup, type), size=factor(linewidth))) +
+    geom_point(aes(color = subgroup, group = interaction(subgroup, type))) +
     geom_ribbon(data=coverage_raw, aes(x=rank, ymin=lower*100, ymax=upper*100, fill=subgroup), alpha=alpha, linetype=0) +
     geom_ribbon(data=coverage_adj, aes(x=rank, ymin=lower*100, ymax=upper*100, fill=subgroup), alpha=alpha, linetype=0) +
     theme_bw() +

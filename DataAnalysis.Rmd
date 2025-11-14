@@ -57,8 +57,8 @@ countries <- data_NNS_sites10 %>%
 countries
 ```
 
-# Fig1a - timeline of included data
-``` {r}
+# Fig1a - timeline of included data (original)
+``` {r, eval=F}
 timeline_WA <- timelineBarplot(data_NNS_sites10, "Western Africa", cols=c("#e6194B", "#4363d8"), ylim=c(0,150))
 timeline_EA <- timelineBarplot(data_NNS_sites10, "Eastern Africa", cols=c( "#f58231", "#FAC124","#e6194B", "#EFBBBB", "#99ccff", "#4363d8", "#000000", "#994c00", "#4C9F3B", "#9CDA90"))
 timeline_SA <- timelineBarplot(data_NNS_sites10, "Southern Africa", cols=c("#4363d8", "#e6194B", "#f58231", "#EFBBBB", "#FAC124"), ylim=c(0,150))
@@ -67,6 +67,25 @@ timeline_SAs <- timelineBarplot(data_NNS_sites10, "South Asia", cols=c("#FAC124"
 timeline_barplot <- timeline_WA+timeline_SA + timeline_EA + timeline_SAs + plot_layout(ncol = 2, axes="collect", heights=c(1,2)) & theme(legend.justification = "left")
 
 timeline_barplot + patchwork::plot_annotation(title="a")
+```
+
+# Fig 1a v2 (plos med editorial request to remove stacked bar plots)
+``` {r}
+timeline_barplot <- data_NNS_sites10 %>% 
+  group_by(Region, Country, Study, Year) %>% 
+  count() %>% 
+  mutate(loc=paste0(Country, " (",Study,")")) %>% 
+  mutate(Region2=if_else(Region=="Western Africa", "W. Africa", Region)) %>%
+  mutate(Region2 = factor(Region2, levels = 
+                           c("South Asia", "Eastern Africa", "Southern Africa", "W. Africa"))) %>% 
+  ggplot(aes(y=Year, x=loc, fill=n)) + 
+  geom_tile() + 
+  geom_text(aes(label = n), color = "black", size = 2) + 
+  facet_grid(~Region2, scales="free_x", space = "free_x") + 
+  scale_fill_gradient(low = "white", high = "maroon") + 
+  labs(x="Country (Study)", y="") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
 ```
 
 # Fig 1b - map of study sites
@@ -147,11 +166,14 @@ se_region_plot
 
 # Fig 1: sample timeline barplots plus map
 ``` {r}
-patchwork::wrap_elements(panel=timeline_barplot) / patchwork::wrap_elements(se_region_plot) + patchwork::plot_annotation(tag_levels ="a")
+patchwork::wrap_elements(panel=timeline_barplot) / patchwork::wrap_elements(se_region_plot) + patchwork::plot_annotation(tag_levels ="a") + patchwork::plot_layout(height=c(2,3))
 
-ggsave("figures/Fig1_timelineRegionCountryStudy_siteMap.pdf", width=7, height=7)
-ggsave("figures/Fig1_timelineRegionCountryStudy_siteMap.png", width=7, height=7)
-ggsave("figures/Fig1_timelineRegionCountryStudy_siteMap.tiff", width=7, height=7)
+
+patchwork::wrap_elements(se_region_plot) / patchwork::wrap_elements(panel=timeline_barplot) + patchwork::plot_annotation(tag_levels ="a") + patchwork::plot_layout(height=c(5,4))
+
+ggsave("figures/Fig1_timelineRegionCountryStudy_siteMap.pdf", width=9.5, height=9.5)
+ggsave("figures/Fig1_timelineRegionCountryStudy_siteMap.png", width=9.5, height=9.5)
+ggsave("figures/Fig1_timelineRegionCountryStudy_siteMap.tiff", width=9.5, height=9.5)
 
 ```
 
