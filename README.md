@@ -1,6 +1,6 @@
 # Meta-analysis of K and O serotype distributions and coverage, from Klebsiella pneumoniae neonatal sepsis in African and South Asian countries
 
-This repository includes data and code from the paper: "Distribution of capsule and O types in Klebsiella pneumoniae causing neonatal sepsis in Africa and South Asia: meta-analysis of genome-predicted serotype prevalence and potential vaccine coverage" (Stanton et al, 2025).
+This repository includes data and code from the paper: ["Distribution of capsule and O types in Klebsiella pneumoniae causing neonatal sepsis in Africa and South Asia: A meta-analysis of genome-predicted serotype prevalence to inform potential vaccine coverage"](https://doi.org/10.1371/journal.pmed.1004879). Stanton, Keegan et al, 2026, _PLoS Medicine_.
 
 Inputs to the modelling are in `data_*/`, model outputs are in `outputs_*/`, and the fitted models (R objects) are available in figshare.
 
@@ -180,8 +180,10 @@ The file begins by loading the necessary libraries for data manipulation and Bay
 
 If you use the data, code, figures or tables presented here please cite this repository and the paper:
 
-"Distribution of capsule and O types in Klebsiella pneumoniae causing neonatal sepsis in Africa and South Asia: meta-analysis of genome-predicted serotype prevalence and potential vaccine coverage". 
+"Distribution of capsule and O types in Klebsiella pneumoniae causing neonatal sepsis in Africa and South Asia: A meta-analysis of genome-predicted serotype prevalence to inform potential vaccine coverage". 
 
 Thomas D Stanton/Shaun P Keegan, Jabir A Abdulahi, Anne V Amulele, Matthew Bates, Eva Heinz, Yogesh Hooda, Weiming Hu, Kajal Jain, Samiah Kanwar, Rindidzani Magobo, Courtney P Olwagen, John M Tembo, Tolbert Sonda, Jonathan Strysko, Caroline C Tigoi, Sameen Ahmad Amin, Kyle Bittinger, Jennifer Cornick, Ebenezer Foster-Nyarko, Wilson Gumbi, Aneeta Hotwani, Naveed Iqbal, Steven M Jones, Furqan Kabir, Waqasuddin Khan, Chileshe L Musyani, Carolyn M McGann, Varsha Mittal, Ahmed M Moustafa, Patrick Musicha, James CL Mwansa, Moreka L Ndumba, Erkison E Odih, Donwilliams O Omuoyo, Oliver Pearse, Laura T Phillips, Paul J Planet, Aniqa Abdul Rasool, Charlene MC Rodrigues, Kirsty Sands, Arif M Tanmoy, Erin Theiller, Allan M Zuza, Sulagna Basu, Grace J Chan, Kenneth C Iregbu, Jean-Baptiste Mazarati, ​​Semaria Solomon Alemayehu, Timothy R Walsh, Rabaab Zahra, Angela Dramowski, Sombo Fwoloshi, Appiah-Korang Labi, Lola Madrid, Noah Obeng-Nkrumah, David Ojok, Boaz D Wadugu, Andrew C Whitelaw, Adhisivam Bethou, Anudita Bhargava, Atul Jindal, Ruchi N Nanavati, Priyanka S Prasad, Apurba Sastry, Joveria Q Farooqi, Najia Ghanchi, Fyezah Jehan, Erum Khan, Ramesh K Agarwal, Alexander M Aiken, James A Berkley, Susan E Coffin, Nicholas A Feasey, Nelesh P Govender, Davidson H Hamer, Shabir A Madhi, M Imran Nisar, Samir K Saha, Senjuti Saha, M Jeeva Sankar, Kelly L Wyres/Kathryn E Holt
 
-medRxiv, 2025
+_PLoS Medicine_, 2026
+
+DOI: [10.1371/journal.pmed.1004879](https://doi.org/10.1371/journal.pmed.1004879)
